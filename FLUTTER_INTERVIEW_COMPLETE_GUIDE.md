@@ -101,6 +101,37 @@
 - [Mock Interview ৩: Performance, Memory & Advanced Concepts](#chap-06-mock-interviews-mock-interview-3-md)
 - [Mock Interview ৪: Real-world Scenario & Problem Solving](#chap-06-mock-interviews-mock-interview-4-md)
 
+### [অধ্যায় ৭: App Deployment & Store Release (প্লে স্টোর ও অ্যাপ স্টোর)](#chap-07-deployment)
+
+- [Google Play Store ডিপ্লয়মেন্ট, Keystore ও রিলিজ গাইড](#chap-07-deployment-playstore-deployment-md)
+- [Apple App Store ডিপ্লয়মেন্ট, Certificates ও TestFlight](#chap-07-deployment-appstore-deployment-md)
+- [In-App Updates ও Force Update মেকানিজম](#chap-07-deployment-in-app-updates-md)
+
+### [অধ্যায় ৮: Debugging, Profiling & Crash Monitoring](#chap-08-debugging)
+
+- [Flutter DevTools - পারফরম্যান্স, মেমোরি ও CPU প্রোফাইলিং](#chap-08-debugging-flutter-devtools-md)
+- [Production Crash Reporting - Firebase Crashlytics & Sentry](#chap-08-debugging-crashlytics-and-sentry-md)
+
+### [অধ্যায় ৯: Real-Time Chat & Media Calling (চ্যাট ও কলিং)](#chap-09-realtime)
+
+- [Real-Time Chatting Architecture (WebSocket, Socket.io, Firebase)](#chap-09-realtime-realtime-chat-md)
+- [Audio & Video Calling (WebRTC, Agora, CallKit Incoming Calls)](#chap-09-realtime-audio-video-calling-md)
+
+### [অধ্যায় ১০: Background Location & Live Tracking (লাইভ ট্র্যাকিং)](#chap-10-location)
+
+- [Background Live Location Tracking ও ব্যাটারি অপ্টিমাইজেশন](#chap-10-location-live-location-background-md)
+- [Google Maps, Smooth Marker Animation ও রুট পলিলাইন](#chap-10-location-map-and-marker-animation-md)
+
+### [অধ্যায় ১১: Payment Gateways & In-App Purchase (পেমেন্ট গেটওয়ে)](#chap-11-payments)
+
+- [Payment Gateway Security Architecture ও Webhook ফ্লো](#chap-11-payments-payment-architecture-md)
+- [Popular Gateways: Stripe, bKash, SSLCommerz ও In-App Purchase](#chap-11-payments-popular-gateways-md)
+
+### [অধ্যায় ১২: Testing in Flutter (ইউনিট, উইজেট ও ইন্টিগ্রেশন টেস্ট)](#chap-12-testing)
+
+- [Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump](#chap-12-testing-testing-overview-md)
+- [Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests](#chap-12-testing-mocking-and-bloc-test-md)
+
 
 ---
 
@@ -18770,5 +18801,1119 @@ int number3 = 7;  // Output: 5040
 
 **Logic Question (Brain Teaser):**
 একটি ঘড়িতে ঠিক 3টা বাজলে মিনিটের কাঁটা এবং ঘন্টার কাঁটার মধ্যে কত ডিগ্রি কোণ তৈরি হয়? আর 3টা 30 মিনিটে কত ডিগ্রি কোণ তৈরি হবে?
+
+
+
+
+
+# অধ্যায় ৭: App Deployment & Store Release (প্লে স্টোর ও অ্যাপ স্টোর)
+<a id="chap-07-deployment"></a>
+
+
+
+
+---
+
+## Google Play Store ডিপ্লয়মেন্ট, Keystore ও রিলিজ গাইড
+<a id="chap-07-deployment-playstore-deployment-md"></a>
+
+
+# Google Play Store Deployment - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+একটি Flutter অ্যাপকে প্রোডাকশনের জন্য প্রস্তুত করা এবং Google Play Console-এ সফলভাবে প্রকাশ করার সম্পূর্ণ প্রক্রিয়া।
+
+---
+
+## 🎯 ১. প্রোডাকশন রিলিজের পূর্বপ্রস্তুতি (Pre-Release Checklist)
+
+### প্রশ্ন ১: Debug APK বনাম Release App Bundle (.aab)-এর মধ্যে পার্থক্য কী? Google Play Store-এ কোনটি আপলোড করতে হয়?
+
+**উত্তর (ডিটেইল):**
+- **Debug APK:** এতে Dart VM এবং Hot Reload কোড থাকে। ফাইল সাইজ অনেক বড় (৪০-৮০ MB+) হয় এবং পারফরম্যান্স অপ্টিমাইজ করা থাকে না।
+- **Release APK:** AOT (Ahead-of-Time) কম্পাইল করা মেশিন কোড। কোনো ডিবাগিং প্রতীক থাকে না, সাইজ ছোট এবং ফাস্ট।
+- **Release App Bundle (.aab):** Google Play Store-এ আপলোড করার জন্য **AAB বাধ্যতামূলক**। 
+  - AAB আপলোড করলে Google Play Store ইউজারের ডিভাইসের CPU আর্কিটেকচার (arm64-v8a, armeabi-v7a) এবং স্ক্রিন রেজোলিউশন অনুযায়ী অপ্টিমাইজড ছোট সাইজের APK তৈরি করে দেয় (Dynamic Delivery)। ফলে ইউজারের ডাউনলোড সাইজ প্রায় ৩০-৫০% কমে যায়।
+
+```bash
+# Release App Bundle তৈরির কমান্ড:
+flutter build appbundle --release
+```
+
+---
+
+### প্রশ্ন ২: Android Keystore কী এবং এটি কেন অত্যন্ত গুরুত্বপূর্ণ? হারিয়ে গেলে কী ক্ষতি হবে?
+
+**উত্তর (ডিটেইল):**
+- **Keystore (`.jks` ফাইল):** এটি একটি ক্রিপ্টোগ্রাফিক সিকিউরিটি কি (Key) যা প্রমাণ করে অ্যাপটির আসল মালিক বা ডেভেলপার আপনি।
+- **কেন গুরুত্বপূর্ণ:** আপনি যখন পরবর্তীতে অ্যাপের নতুন ভার্সন বা আপডেট পাঠাবেন, সেই আপডেটটিকে অবশ্যই একই Keystore দিয়ে সাইন করতে হবে।
+- **হারিয়ে গেলে কী হবে:** যদি আপনি এই Keystore ফাইল বা এর পাসওয়ার্ড হারিয়ে ফেলেন, তবে আপনি আর কখনোই আপনার অ্যাপে কোনো আপডেট দিতে পারবেন না! 
+  *(তবে আপনি যদি Google Play App Signing অপশনটি এনাবল রাখেন, তবে Google Support-এ রিকোয়েস্ট পাঠিয়ে নতুন কি রিসেট করা সম্ভব।)*
+
+**Keystore তৈরির কমান্ড (Terminal):**
+```bash
+keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+```
+
+---
+
+### প্রশ্ন ৩: `key.properties` ফাইল কীভাবে কনফিগার করবেন এবং এটি কেন Git-এ পুশ করা নিষেধ?
+
+**উত্তর (ডিটেইল):**
+`android/key.properties` ফাইলে আপনার কীস্টোরের লোকেশন এবং পাসওয়ার্ড রাখা হয়:
+
+```properties
+storePassword=yourStorePassword
+keyPassword=yourKeyPassword
+keyAlias=my-key-alias
+storeFile=../my-upload-key.jks
+```
+
+**`android/app/build.gradle` কনফিগারেশন:**
+```groovy
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    ...
+    signingConfigs {
+        release {
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword = keystoreProperties['keyPassword']
+            storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword = keystoreProperties['storePassword']
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+```
+
+> **Security Warning:** `key.properties` এবং `.jks` ফাইল কখনোই গিটহাবে পুশ করবেন না। এগুলোকে অবশ্যই `.gitignore`-এ যুক্ত রাখবেন।
+
+---
+
+### প্রশ্ন ৪: Version Code বনাম Version Name-এর পার্থক্য কী?
+
+**উত্তর (ডিটেইল):**
+`pubspec.yaml` ফাইলে ভার্সনিং এভাবে লেখা হয়:
+```yaml
+version: 1.2.0+5
+```
+- **Version Name (`1.2.0`):** এটি ব্যবহারকারীদের দেখানোর জন্য (Semantic Versioning: Major.Minor.Patch)।
+- **Version Code (`5`):** এটি একটি পূর্ণসংখ্যা (Integer) যা Google Play Store ইন্টারনালি ট্র্যাক করে। প্রতিবার নতুন আপডেট দেওয়ার সময় এই সংখ্যাটি অবশ্যই আগের চেয়ে বড় হতে হবে (যেমন: ৫ এর পর ৬)।
+
+---
+
+### প্রশ্ন ৫: ProGuard / R8 এবং কোড Obfuscation কী? কেন প্রোডাকশনে এটি জরুরি?
+
+**উত্তর (ডিটেইল):**
+1. **Minification & Dead Code Elimination:** আপনার প্রোজেক্ট এবং প্যাকেজগুলোর মধ্যে যেসব কোড/মেথড বাস্তবে ব্যবহৃত হয়নি সেগুলোকে মুছে ফেলে অ্যাপের সাইজ উল্লেখযোগ্যভাবে কমিয়ে দেয়।
+2. **Obfuscation (কোড দুর্বোধ্য করা):** ক্লাস, ভেরিয়েবল ও মেথডের নাম পরিবর্তন করে অপ্রাসঙ্গিক অক্ষর (যেমন: `a`, `b`, `c`) দিয়ে রিপ্লেস করে দেয়। ফলে কেউ আপনার APK রিভার্স ইঞ্জিনিয়ারিং বা ডিকম্পাইল করলেও ভেতরের বিজনেস লজিক সহজে বুঝতে পারে না।
+
+**Flutter-এ কোড অবফাসকেট করার কমান্ড:**
+```bash
+flutter build appbundle --obfuscate --split-debug-info=./build/debug-info
+```
+
+---
+
+## ⚠️ ২. Play Store রিজেকশনের শীর্ষ কারণ ও ইন্টারভিউ টিপস
+
+### প্রশ্ন ৬: Play Store-এ সাধারণত কোন কোন কারণে অ্যাপ রিজেক্ট বা সাসপেন্ড হয়?
+
+1. **Privacy Policy (গোপনীয়তা নীতি) না থাকা বা অসম্পূর্ণ হওয়া:** অ্যাপ যদি ইন্টারনেট, লোকেশন, ক্যামেরা বা ফোন মেমোরি পারমিশন নেয়, তবে একটি পাবলিক Privacy Policy URL দেওয়া বাধ্যতামূলক।
+2. **Sensitive Permissions (যেমন: SMS, Background Location):** আপনি যদি ব্যাকগ্রাউন্ড লোকেশন বা কল লগ চান, তবে Google-কে ভিডিও প্রুফ দিয়ে বোঝাতে হবে যে এই পারমিশন ছাড়া অ্যাপের মূল ফিচার অচল।
+3. **Data Safety Form ভুল পূরণ করা:** অ্যাপে কোনো অ্যানালিটিক্স (Firebase, Facebook SDK) বা থার্ড-পার্টি লাইব্রেরি ডেটা সংগ্রহ করলে তা Play Console-এর Data Safety সেকশনে সঠিকভাবে উল্লেখ না করলে রিজেক্ট হয়।
+4. **টেস্টিং ক্রেডেনশিয়াল না দেওয়া:** লগইন সিস্টেম থাকলে গুগল রিভিয়্যুয়ারদের জন্য টেস্ট ইমেইল ও পাসওয়ার্ড দিতে হয়। না দিলে তারা অ্যাপ পরীক্ষা করতে না পেরে রিজেক্ট করে দেয়।
+5. **ক্র্যাশ বা ব্রোকেন ফাংশনালিটি:** রিভিয়্যুয়ারের ডিভাইসে অ্যাপ ওপেন করার সাথে সাথে ক্র্যাশ করলে অ্যাপ রিজেক্ট হবে।
+
+
+
+
+
+---
+
+## Apple App Store ডিপ্লয়মেন্ট, Certificates ও TestFlight
+<a id="chap-07-deployment-appstore-deployment-md"></a>
+
+
+# Apple App Store Deployment - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+iOS প্ল্যাটফর্মের জন্য Flutter অ্যাপ বিল্ড করা, টেস্টফ্লাইটে টেস্ট করা এবং Apple App Store-এ পাবলিশ করার বিস্তারিত গাইড।
+
+---
+
+## 🍏 ১. অ্যাপল ইকোসিস্টেমের গুরুত্বপূর্ণ উপাদান
+
+### প্রশ্ন ১: Apple Certificates, Identifiers, এবং Provisioning Profiles-এর সম্পর্ক কী?
+
+**উত্তর (ডিটেইল):**
+- **Certificates (শংসাপত্র):** এটি প্রমাণ করে যে আপনি অ্যাপলের একজন রেজিস্টার্ড ডেভেলপার। দুটি প্রকার:
+  - *Development Certificate:* ডিভাইসে টেস্ট করার জন্য।
+  - *Distribution Certificate:* TestFlight বা App Store-এ আপলোড করার জন্য।
+- **App ID / Identifiers:** আপনার অ্যাপের ইউনিক বান্ডল আইডি (যেমন: `com.example.myapp`) এবং প্রয়োজনীয় ক্যাপাবিলিটিজ (Push Notifications, Sign in with Apple, In-App Purchase)।
+- **Provisioning Profile:** এটি সার্টিফিকেট এবং App ID-কে একত্রিত করে একটি নিরাপদ প্যাকেজ বানায়। এটি আইওএস অপারেটিং সিস্টেমকে জানায়: "এই ডেভেলপার (Certificate), এই নির্দিষ্ট অ্যাপটি (App ID), এই ডিভাইসে বা অ্যাপ স্টোরে চালানোর অনুমতি পেয়েছে।"
+
+```
+[Developer Certificate] + [App ID] + [Devices] ➔ [Provisioning Profile]
+```
+
+---
+
+### প্রশ্ন ২: TestFlight কী এবং ইন্টারনাল বনাম এক্সটারনাল টেস্টিং-এর পার্থক্য কী?
+
+**উত্তর (ডিটেইল):**
+- **TestFlight:** অ্যাপল দ্বারা প্রদত্ত অ্যাপ বিটা-টেস্টিং প্ল্যাটফর্ম। App Store-এ পাবলিক রিলিজ দেওয়ার আগে ব্যবহারকারী বা ক্লায়েন্টদের দিয়ে অ্যাপ টেস্ট করানোর জন্য এটি ব্যবহৃত হয়।
+- **Internal Testing:** আপনার অ্যাপল ডেভেলপার টিমের সর্বোচ্চ ১০০ জন সদস্য অবিলম্বে অ্যাপ টেস্ট করতে পারে। এর জন্য অ্যাপলের কোনো রিভিউ লাগে না।
+- **External Testing:** টিমের বাইরের সর্বোচ্চ ১০,০০০ জন সাধারণ টেস্টারকে ইমেইল বা পাবলিক লিংকের মাধ্যমে টেস্ট করতে দেওয়া যায়। তবে এক্সটারনাল টেস্টারদের কাছে পৌঁছানোর আগে অ্যাপলের প্রাথমিক বিটা রিভিউ পাস করতে হয়।
+
+---
+
+### প্রশ্ন ৩: iOS 17+ Privacy Manifest (`PrivacyInfo.xcprivacy`) কী এবং কেন এটি এখন বাধ্যতামূলক?
+
+**উত্তর (ডিটেইল):**
+২০২৪ সালের মে মাস থেকে অ্যাপল নতুন সব অ্যাপ ও আপডেটের জন্য **Privacy Manifest** বাধ্যতামূলক করেছে।
+- **উদ্দেশ্য:** অ্যাপে ব্যবহৃত থার্ড-পার্টি SDK (যেমন: Firebase, Google Mobile Ads) ব্যবহারকারীর কী কী ডেটা সংগ্রহ করে এবং কেন সংগ্রহ করে তা অ্যাপলকে আনুষ্ঠানিকভাবে ডিক্লেয়ার করতে হয়।
+- **Required Reason APIs:** ইউজার যাতে ট্র্যাকিং প্রতিরোধ করতে পারে, তাই নির্দিষ্ট কিছু API (যেমন: File timestamp, Disk space, User defaults) ব্যবহারের কারণ উল্লেখ করতে হয়।
+
+---
+
+## ⚠️ ২. Apple App Store রিজেকশনের কারণ ও ইন্টারভিউ প্রশ্ন
+
+### প্রশ্ন ৪: "Sign in with Apple" কখন ব্যবহার করা বাধ্যতামূলক?
+
+**উত্তর (ডিটেইল):**
+অ্যাপল রিভিয়্যু গাইডলাইন অনুযায়ী, আপনার অ্যাপে যদি কোনো থার্ড-পার্টি সোশ্যাল লগইন (যেমন: **Login with Google**, **Facebook**, বা **Twitter**) থাকে, তবে আপনাকে অবশ্যই সমানভাবে **Sign in with Apple** অপশনও রাখতে হবে। 
+*(যদি অ্যাপে শুধুমাত্র নিজস্ব ইমেইল/পাসওয়ার্ড বা ফোন নম্বর লগইন থাকে, তবে অ্যাপল সাইন-ইন বাধ্যতামূলক নয়।)*
+
+---
+
+### প্রশ্ন ৫: Account Deletion (অ্যাকাউন্ট মোছার ফিচার) সংক্রান্ত অ্যাপলের নিয়ম কী?
+
+**উত্তর (ডিটেইল):**
+যদি আপনার অ্যাপে ব্যবহারকারী অ্যাকাউন্ট তৈরি করার সুবিধা থাকে, তবে অ্যাপের ভেতর থেকেই ব্যবহারকারী যাতে **সরাসরি নিজের অ্যাকাউন্ট এবং সকল ব্যক্তিগত ডেটা মুছে (Delete Account) ফেলতে পারে**, সেই অপশন থাকা বাধ্যতামূলক।
+- শুধুমাত্র অ্যাকাউন্ট "Deactivate" করা যথেষ্ট নয়।
+- অ্যাকাউন্ট ডিলিটের বাটন সহজে খুঁজে পাওয়ার মতো জায়গায় (যেমন: Profile বা Settings স্ক্রিনে) থাকতে হবে। এটি না থাকলে অ্যাপ রিজেক্ট হবে (Guideline 5.1.1(v))।
+
+---
+
+### প্রশ্ন ৬: iOS বিল্ড করার ধাপসমূহ কী কী?
+
+```bash
+# ১. নির্ভরতা আপডেট
+flutter clean
+flutter pub get
+cd ios && pod install && cd ..
+
+# ২. Release Archive তৈরি
+flutter build ipa --release
+
+# ৩. এরপর Xcode Organizer অথবা Transporter অ্যাপ দিয়ে App Store Connect-এ আপলোড করতে হয়।
+```
+
+
+
+
+
+---
+
+## In-App Updates ও Force Update মেকানিজম
+<a id="chap-07-deployment-in-app-updates-md"></a>
+
+
+# In-App Updates & Force Update মেকানিজম
+
+অ্যাপ স্টোর বা প্লে স্টোরে নতুন ভার্সন আসার পর ব্যবহারকারীকে অ্যাপের ভেতর থেকেই আপডেট দেওয়ার প্র্যাকটিক্যাল টেকনিক।
+
+---
+
+## 🔄 ১. Google Play In-App Updates
+
+### প্রশ্ন ১: Flexible Update বনাম Immediate Update-এর পার্থক্য কী?
+
+**উত্তর (ডিটেইল):**
+Google Play Core লাইব্রেরি ব্যবহার করে অ্যাপের ভেতর দুইভাবে আপডেট করানো যায়:
+
+| ফিচার | Flexible Update | Immediate Update |
+| :--- | :--- | :--- |
+| **ব্যবহারের সময়** | ছোটখাটো বাগ ফিক্স বা অপশনাল নতুন ফিচার আসলে। | কোনো ক্রিটিক্যাল সিকিউরিটি বাগ বা মেজর ব্রেকিং চেঞ্জ আসলে। |
+| **ইউজার এক্সপেরিয়েন্স** | ইউজার অ্যাপ ব্যবহার করতে থাকবে, ব্যাকগ্রাউন্ডে আপডেট ডাউনলোড হবে। ডাউনলোড শেষে ইনস্টল করার রিকোয়েস্ট আসবে। | পুরো স্ক্রিন ব্লক করে আপডেট ডাউনলোড ও ইনস্টল করতে বাধ্য করবে। আপডেট না হওয়া পর্যন্ত অ্যাপ চালানো যাবে না। |
+| **বাধ্যতামূলক কি?** | না, ইউজার চাইলে বাতিল করতে পারে। | হ্যাঁ, ইউজার অ্যাপ চালাতে চাইলে আপডেট করতেই হবে। |
+
+**Flutter-এ কোড উদাহরণ (`in_app_update` প্যাকেজ):**
+
+```dart
+import 'package:in_app_update/in_app_update.dart';
+
+Future<void> checkForUpdate() async {
+  try {
+    final info = await InAppUpdate.checkForUpdate();
+    
+    if (info.updateAvailability == UpdateAvailability.updateAvailable) {
+      if (info.immediateUpdateAllowed) {
+        // Immediate / Force Update শুরু করুন
+        await InAppUpdate.performImmediateUpdate();
+      } else if (info.flexibleUpdateAllowed) {
+        // Flexible Update ব্যাকগ্রাউন্ডে ডাউনলোড করুন
+        await InAppUpdate.startFlexibleUpdate();
+        await InAppUpdate.completeFlexibleUpdate();
+      }
+    }
+  } catch (e) {
+    print('In-App update failed: $e');
+  }
+}
+```
+
+---
+
+## 🛡️ ২. Custom Force Update (Remote Config / Backend API)
+
+### প্রশ্ন ২: iOS এবং Android উভয়ের জন্য কীভাবে একটি নির্ভরযোগ্য Force Update সিস্টেম তৈরি করবেন?
+
+**উত্তর (ডিটেইল):**
+কারণ Apple-এর নিজস্ব কোনো ইন-অ্যাপ আপডেট ডায়ালগ নেই, তাই ইন্ডাস্ট্রি স্ট্যান্ডার্ড সমাধান হলো **Firebase Remote Config** অথবা **Backend Version API** ব্যবহার করা।
+
+**আর্কিটেকচার ফ্লো:**
+```
+App Launch ➔ Fetch Min Required Version from Server ➔ Compare with Local App Version
+     │
+     ├── Local Version < Min Version ➔ Show Non-dismissible Dialog ("Please Update App") ➔ Redirect to Store
+     └── Local Version >= Min Version ➔ Allow User to Continue
+```
+
+**বাস্তব কোড উদাহরণ (`package_info_plus` সহ):**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+Future<void> verifyAppVersion(BuildContext context) async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  final currentVersionCode = int.tryParse(packageInfo.buildNumber) ?? 1;
+
+  // সার্ভার বা Firebase Remote Config থেকে পাওয়া মিনিমাম দরকারি ভার্সন
+  const minRequiredVersionCode = 12; 
+
+  if (currentVersionCode < minRequiredVersionCode) {
+    if (!context.mounted) return;
+    
+    // ব্যকগ্রাউন্ড বন্ধ করে আন-ডিসমিসেবল পপআপ দেখান
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async => false, // ব্যাক বাটন বন্ধ
+        child: AlertDialog(
+          title: const Text('গুরুত্বপূর্ণ আপডেট প্রয়োজন!'),
+          content: const Text(
+            'অ্যাপটির একটি নতুন সংস্করণ উপলব্ধ রয়েছে। অনুগ্রহ করে আপডেট করে অ্যাপটি ব্যবহার করুন।'
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                final storeUrl = Theme.of(context).platform == TargetPlatform.iOS
+                    ? 'https://apps.apple.com/app/idYOUR_APP_ID'
+                    : 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+                launchUrl(Uri.parse(storeUrl), mode: LaunchMode.externalApplication);
+              },
+              child: const Text('এখনই আপডেট করুন'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+
+
+
+# অধ্যায় ৮: Debugging, Profiling & Crash Monitoring
+<a id="chap-08-debugging"></a>
+
+
+
+
+---
+
+## Flutter DevTools - পারফরম্যান্স, মেমোরি ও CPU প্রোফাইলিং
+<a id="chap-08-debugging-flutter-devtools-md"></a>
+
+
+# Flutter DevTools - পারফরম্যান্স ডিবাগিং ও প্রোফাইলিং গাইড
+
+অ্যাপের মেমোরি লিক, ফ্রেম ড্রপ (Jank), অপ্রয়োজনীয় রি-বিল্ড এবং নেটওয়ার্ক রিকোয়েস্ট ডিবাগ করার অফিশিয়াল টুল।
+
+---
+
+## 🛠️ ১. Flutter DevTools-এর মূল ট্যাবসমূহ
+
+### প্রশ্ন ১: Flutter DevTools কীভাবে ওপেন করতে হয় এবং এর প্রধান প্রধান ট্যাবগুলো কী কী?
+
+**উত্তর (ডিটেইল):**
+টার্মিনাল থেকে `flutter run` চালিয়ে প্রদর্শিত DevTools URL ব্রাউজারে খুলতে পারেন, অথবা VS Code / Android Studio-এর ডিবাগ বার থেকে সরাসরি ওপেন করা যায়।
+
+প্রধান ট্যাবসমূহ:
+1. **Flutter Inspector:** UI লেআউট এবং উইজেট ট্রির স্ট্রাকচার বিশ্লেষণ করা।
+2. **Performance Tab:** UI ফ্রেম রেট (FPS), ফ্রেম ড্রপ বা Jank এবং রেন্ডারিং টাইম ট্র্যাক করা।
+3. **CPU Profiler:** অ্যাপের কোন মেথডটি প্রসেসরের বেশি সময় নিচ্ছে তা Flame Chart দিয়ে দেখা।
+4. **Memory Tab:** মেমোরি কনজাম্পশন, অ্যালোকেটেড অবজেক্ট এবং Memory Leak শনাক্ত করা।
+5. **Network Tab:** সমস্ত HTTP/HTTPS রিকোয়েস্ট, রেসপন্স বডি, হেডার এবং লেটেন্সি পর্যবেক্ষণ করা।
+6. **Logging Tab:** সিস্টেম ইভেন্ট, ফ্রেমওয়ার্ক লগ এবং এরর দেখা।
+
+---
+
+### প্রশ্ন ২: UI Jank (ফ্রেম ড্রপ) কী এবং Performance Overlay কীভাবে সাহায্য করে?
+
+**উত্তর (ডিটেইল):**
+- স্মুথ অ্যানিমেশনের জন্য Flutter অ্যাপ প্রতি সেকেন্ডে ৬০টি ফ্রেম (বা ৯০/১২০Hz স্ক্রিনে ৯০/১২০টি ফ্রেম) রেন্ডার করতে হয়। অর্থাৎ একটি ফ্রেম তৈরি করতে Flutter ১৬.৬৭ মিলি-সেকেন্ড সময় পায়।
+- যদি কোনো ফ্রেম তৈরি করতে ১৬.৬ মিলি-সেকেন্ডের বেশি সময় লেগে যায়, তবে স্ক্রিন কেঁপে ওঠে বা আটকে যায়। একে **Jank** বলে।
+
+**DevTools Performance ভিউতে দুটি থ্রেড দেখা যায়:**
+- **UI Thread:** Dart কোড এক্সিকিউট করে এবং উইজেট ট্রি বিল্ড করে।
+- **Raster (GPU) Thread:** স্কিন বা ইমপেলারে পিক্সেলগুলো স্ক্রিনে পেইন্ট করে।
+- যদি বারটি লাল দেখায়, তবে বুঝতে হবে সেই ফ্রেমে Jank হয়েছে।
+
+---
+
+### প্রশ্ন ৩: DevTools Memory Tab দিয়ে কীভাবে Memory Leak শনাক্ত করবেন?
+
+**উত্তর (ডিটেইল):**
+1. অ্যাপে কোনো নির্দিষ্ট অ্যাকশন করার আগে (যেমন: একটি নতুন স্ক্রিন ওপেন করার আগে) **Snapshot** নিন।
+2. স্ক্রিনে প্রবেশ করুন, কিছু কাজ করুন এবং তারপর ব্যাক বাটনে চেপে স্ক্রিন থেকে বের হয়ে যান।
+3. মেমোরি থেকে অপ্রয়োজনীয় অবজেক্ট মুছে ফেলতে **Collect Garbage (GC)** বাটনে চাপুন।
+4. আরেকটি **Snapshot** নিন এবং দুটি স্ন্যাপশট **Diff** করুন।
+5. যদি দেখা যায় যে স্ক্রিন বন্ধ হওয়ার পরেও কন্ট্রোলার (`TextEditingController`, `AnimationController`) বা স্টেট অবজেক্ট মেমোরিতে রয়ে গেছে, তবে সেখানে নিশ্চিত **Memory Leak** আছে!
+
+---
+
+### প্রশ্ন ৪: "Track Widget Builds" এবং "Highlight Repaints" অপশনগুলোর কাজ কী?
+
+- **Track Widget Builds:** কোনো স্টেট পরিবর্তনের পর কোন কোন উইজেট আবার নতুন করে বিল্ড হচ্ছে তা ভিজ্যুয়ালি হাইলাইট করে। এর মাধ্যমে অপ্রয়োজনীয় উইজেট রিবিল্ড আটকে দেওয়া যায় (`const` কনস্ট্রাক্টর বা `RepaintBoundary` ব্যবহার করে)।
+- **Highlight Repaints:** স্ক্রিনের কোন অংশে আবার নতুন করে পেইন্ট হচ্ছে তা চারদিকে রঙিন বর্ডার দিয়ে দেখায়। জটিল বা স্ট্যাটিক উইজেটগুলোকে `RepaintBoundary` উইজেট দিয়ে মুড়ে দিলে পুরো স্ক্রিন একসাথে রি-পেইন্ট হওয়া থেকে বেঁচে যায়।
+
+
+
+
+
+---
+
+## Production Crash Reporting - Firebase Crashlytics & Sentry
+<a id="chap-08-debugging-crashlytics-and-sentry-md"></a>
+
+
+# Production Crash Reporting - Firebase Crashlytics & Sentry
+
+প্রোডাকশনে ব্যবহারকারীর ফোনে কোনো ক্র্যাশ বা অপ্রত্যাশিত এরর ঘটলে তা স্বয়ংক্রিয়ভাবে ট্র্যাক এবং সমাধান করার গাইড।
+
+---
+
+## 💥 ১. গ্লোবাল এরর ক্যাচিং (Global Error Handling)
+
+### প্রশ্ন ১: Flutter-এ গ্লোবাল এরর এবং রানটাইম ক্র্যাশ কীভাবে ক্যাচ করতে হয়?
+
+**উত্তর (ডিটেইল):**
+Flutter 3+ এ সব ধরণের ক্র্যাশ ধরার জন্য দুটি প্রধান হুক রয়েছে:
+1. `FlutterError.onError`: Flutter ফ্রেমওয়ার্কের ভেতরের সব UI ও উইজেট লেভেল এরর ধরে।
+2. `PlatformDispatcher.instance.onError`: কোনো অ্যাসিঙ্ক (Async) ফাংশন বা ফ্রেমওয়ার্কের বাইরের এরর ধরে।
+
+**প্রোডাকশন-গ্রেড সেটআপ (`main.dart`):**
+
+```dart
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  // ১. Flutter ফ্রেমওয়ার্কের ভেতরের এরর ক্যাচ করুন
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  };
+
+  // ২. ফ্রেমওয়ার্কের বাইরের সকল Asynchronous এরর ক্যাচ করুন
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  runApp(const MyApp());
+}
+```
+
+---
+
+## 📊 ২. Crashlytics ও Sentry-র মূল ফিচার
+
+### প্রশ্ন ২: Fatal Error বনাম Non-Fatal Error-এর মধ্যে পার্থক্য কী?
+
+- **Fatal Error (অ্যাপ ক্র্যাশ):** অ্যাপটি সাথে সাথে বন্ধ হয়ে যায় বা ব্ল্যাক/রেড স্ক্রিন চলে আসে। ব্যবহারকারী অ্যাপ চালানো চালিয়ে যেতে পারে না।
+- **Non-Fatal Error (হ্যান্ডলড এরর):** কোডে `try-catch` দিয়ে এরর ধরা হয়েছে, ফলে অ্যাপ ক্র্যাশ করেনি কিন্তু ব্যাকএন্ড কল ফেইল করেছে বা ডেটা পার্সিং ভুল হয়েছে। এটিকেও ট্র্যাকিং ড্যাশবোর্ডে লগ করে রাখা যায়:
+
+```dart
+try {
+  await apiService.fetchData();
+} catch (e, stackTrace) {
+  // অ্যাপ ক্র্যাশ করেনি, কিন্তু ডেভ টিমের কাছে নোটিফিকেশন পাঠাতে চান
+  FirebaseCrashlytics.instance.recordError(
+    e, 
+    stackTrace, 
+    reason: 'Failed fetching home data',
+    fatal: false, // Non-fatal
+  );
+}
+```
+
+---
+
+### প্রশ্ন ৩: Breadcrumbs এবং User Identifier কেন যোগ করা জরুরি?
+
+- **User Identifier:** কোন ইউজারের ফোনে এরর হয়েছে তা ড্যাশবোর্ডে দেখতে `setCustomKey` বা `setUserIdentifier` দেওয়া হয় (যেমন: `userId: 4892`—কখনোই পাসওয়ার্ড বা ক্রেডিট কার্ডের মতো গোপন তথ্য দেবেন না)।
+- **Breadcrumbs:** ইউজার ক্র্যাশ করার আগের ৫টি ধাপে কী কী বাটনে চাপ দিয়েছিল (Action History) তা দেখতে Breadcrumb ব্যবহার করা হয়। এর মাধ্যমে বাগটি নিখুঁতভাবে রিপ্রডিউস করা যায়।
+
+---
+
+### প্রশ্ন ৪: প্রোডাকশন কোডে `print()` ব্যবহার করা কেন কঠোরভাবে নিষিদ্ধ? এর বিকল্প কী?
+
+**উত্তর (ডিটেইল):**
+1. `print()` আউটপুট অ্যান্ড্রয়েডের `logcat` এবং আইওএস সিস্টেম লগে সরাসরি চলে যায়। ফলে সংবেদনশীল তথ্য (API Token, User Data) অন্য কোনো ম্যালিসিয়াস অ্যাপ পড়তে পারে।
+2. `print()` এর কোনো লেভেল ফিল্টারিং থাকে না (যেমন: Debug, Info, Warning, Error)।
+3. এটি synchronous হওয়ায় অতিরিক্ত প্রিন্ট করলে অ্যাপের FPS কমে যেতে পারে।
+
+**বিকল্প:**
+`logger` অথবা `talker_flutter` প্যাকেজ ব্যবহার করা, অথবা `kDebugMode` চেক করে শুধুমাত্র ডিবাগ মোডে লগ দেওয়া:
+
+```dart
+import 'package:flutter/foundation.dart';
+
+void safeLog(String message) {
+  if (kDebugMode) {
+    debugPrint('[APP_LOG]: $message');
+  }
+}
+```
+
+
+
+
+
+# অধ্যায় ৯: Real-Time Chat & Media Calling (চ্যাট ও কলিং)
+<a id="chap-09-realtime"></a>
+
+
+
+
+---
+
+## Real-Time Chatting Architecture (WebSocket, Socket.io, Firebase)
+<a id="chap-09-realtime-realtime-chat-md"></a>
+
+
+# Real-Time Chatting Architecture - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+Flutter-এ মেসেজিং বা চ্যাট অ্যাপ্লিকেশন তৈরির আর্কিটেকচার, প্রোটোকল তুলনা এবং প্রোডাকশন টেকনিক।
+
+---
+
+## ⚡ ১. মেসেজিং টেকনোলজি তুলনা
+
+### প্রশ্ন ১: WebSocket, Socket.io এবং Firebase Firestore-এর মধ্যে পার্থক্য কী? চ্যাট অ্যাপের জন্য কোনটি সেরা?
+
+| বৈশিষ্ট্য | WebSockets (`web_socket_channel`) | Socket.io (`socket_io_client`) | Firebase Cloud Firestore |
+| :--- | :--- | :--- | :--- |
+| **প্রোটোকল** | লো-লেভেল বাই-ডিরেকশনাল TCP কানেকশন। | WebSockets-এর উপর নির্মিত হাই-লেভেল লাইব্রেরি। | HTTP/2 এবং gRPC স্ট্রিমিং। |
+| **অটো-রিকানেক্ট** | ম্যানুয়ালি কোড লিখে হ্যান্ডেল করতে হয়। | বিল্ট-ইন অটোমেটিক রিকানেকশন ও ফলব্যাক সাপোর্ট। | অফলাইন ক্যাশিং ও অটো-সিঙ্ক স্বয়ংক্রিয়। |
+| **সার্ভার কন্ট্রোল** | নিজস্ব ব্যাকএন্ড (Node.js, Go, Python)। | নিজস্ব ব্যাকএন্ড (Node.js/NestJS-এ বেশি ব্যবহৃত)। | সার্ভারলেস (Firebase Backend)। |
+| **কখন ব্যবহার করবেন?** | হাই-স্কেল এন্টারপ্রাইজ মেসেজিং (WhatsApp/Telegram স্টাইল)। | কাস্টম ইভেন্ট-বেইজড চ্যাট, গেমিং বা রুম-বেইজড গ্রুপ চ্যাট। | দ্রুত MVP তৈরি করা এবং সার্ভার রক্ষণাবেক্ষণ এড়াতে। |
+
+---
+
+## 📨 ২. মেসেজ লাইফসাইকেল ও স্ট্যাটাস ম্যানেজমেন্ট
+
+### প্রশ্ন ২: WhatsApp-এর মতো সিঙ্গেল টিক, ডাবল টিক এবং ব্লু টিক কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+একটি মেসেজ ৪টি স্টেটের মধ্য দিয়ে যায়:
+
+1. **Clock Icon (Sending...):** লোকাল ডেটাবেসে (যেমন: Hive / SQLite) মেসেজটি তৈরি হয়েছে এবং ব্যাকএন্ডে পাঠানোর চেষ্টা চলছে।
+2. **Single Grey Tick (Sent):** মেসেজটি সার্ভারে পৌঁছেছে এবং সার্ভার একটি Ack (Acknowledgment) পাঠিয়েছে।
+3. **Double Grey Tick (Delivered):** রিসিভারের ফোনে মেসেজটি সফলভাবে পুশ হয়েছে (রিসিভার অনলাইন আছে)।
+4. **Double Blue Tick (Seen / Read):** রিসিভার চ্যাট স্ক্রিন ওপেন করে মেসেজটি দেখেছে।
+
+```
+[Sender Device]
+       │ (1. Socket Emit message)
+       ▼
+[Chat Server] ──── (Ack: Sent) ────► [Sender: Single Tick]
+       │
+       │ (2. Socket Push to Receiver)
+       ▼
+[Receiver Device] ──── (Ack: Delivered) ────► [Sender: Double Tick]
+       │
+       │ (3. Receiver Opens Screen: Read)
+       ▼
+[Receiver Device] ──── (Ack: Seen) ────► [Sender: Blue Tick]
+```
+
+---
+
+## 💾 ৩. অফলাইন মেসেজ কিউ ও পেজিনেশন
+
+### প্রশ্ন ৩: নেটওয়ার্ক না থাকলে মেসেজ কীভাবে সেভ করবেন এবং পরে স্বয়ংক্রিয়ভাবে পাঠাবেন?
+
+**উত্তর (ডিটেইল):**
+- **Offline Message Queue Pattern:**
+  - যখন ইউজার মেসেজ পাঠায়, সরাসরি ইন্টারনেটের উপর নির্ভর না করে প্রথমে লোকাল ডেটাবেসে `status = pending` দিয়ে সেভ করুন এবং সাথে সাথে UI-তে মেসেজটি রেন্ডার করে দিন (Optimistic UI Update)।
+  - ব্যাকগ্রাউন্ডে একটি কিউ ম্যানেজার নেটওয়ার্ক কানেক্টিভিটি (`connectivity_plus`) মনিটর করবে।
+  - নেট কানেকশন পাওয়া মাত্রই `pending` মেসেজগুলো ক্রমানুসারে সার্ভারে পাঠিয়ে স্ট্যাটাস `sent` করবে।
+
+---
+
+### প্রশ্ন ৪: চ্যাট স্ক্রিনে হাজার হাজার মেসেজ কীভাবে পারফরম্যান্ট উপায়ে লোড করবেন?
+
+**উত্তর (ডিটেইল):**
+- **Reverse ListView:** চ্যাট স্ক্রিনে `ListView.builder(reverse: true)` ব্যবহার করতে হয়, যাতে সাম্প্রতিক মেসেজগুলো নিচে থাকে এবং নতুন মেসেজ আসলে কোনো জাম্পিং ছাড়াই স্ক্রল পজিশন ঠিক থাকে।
+- **Cursor-based Pagination:** অফসেট ভিত্তিক পেজিনেশনের পরিবর্তে মেসেজ আইডি বা টাইমস্ট্যাম্প (`before_timestamp`) দিয়ে পূর্ববর্তী ২০-৩০টি মেসেজ পেজিনেশন করে লোড করা হয়।
+
+
+
+
+
+---
+
+## Audio & Video Calling (WebRTC, Agora, CallKit Incoming Calls)
+<a id="chap-09-realtime-audio-video-calling-md"></a>
+
+
+# Audio & Video Calling - WebRTC, Agora & CallKit
+
+Flutter অ্যাপে অডিও/ভিডিও কলিং বাস্তবায়ন, ব্যাকগ্রাউন্ড ইনকামিং কল স্ক্রিন এবং আর্কিটেকচার।
+
+---
+
+## 📞 ১. কলিং টেকনোলজি ও আর্কিটেকচার
+
+### প্রশ্ন ১: WebRTC কী এবং এটি কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+**WebRTC (Web Real-Time Communication)** হলো একটি ওপেন-সোর্স স্ট্যান্ডার্ড যা ব্রাউজার এবং মোবাইল অ্যাপের মধ্যে কোনো থার্ড-পার্টি ইন্টারমিডিয়ারি সার্ভার ছাড়াই সরাসরি **Peer-to-Peer (P2P)** অডিও, ভিডিও এবং ডেটা ট্রান্সফার করতে দেয়।
+
+**WebRTC কানেকশন তৈরির ৩টি প্রধান ধাপ:**
+1. **Signaling Server:** দুটি ডিভাইসের মধ্যে প্রাথমিক মেটাডেটা (Session Description Protocol - SDP) আদান-প্রদান করা (WebSocket বা Firebase দিয়ে করা হয়)।
+2. **STUN Server:** NAT বা ফায়ারওয়ালের পেছনে থাকা ডিভাইসের পাবলিক IP ও পোর্ট বের করা।
+3. **TURN Server (Relay):** যদি দুটি ডিভাইস অত্যন্ত কঠোর ফায়ারওয়ালের পেছনে থাকে এবং সরাসরি P2P কানেকশন তৈরি অসম্ভব হয়, তবে TURN সার্ভারের মাধ্যমে মিডিয়া ডেটা রিলে (Relay) করা হয়।
+
+---
+
+### প্রশ্ন ২: পিওর WebRTC বনাম Agora / LiveKit / Twilio SDK-এর সুবিধা-অসুবিধা কী?
+
+- **Raw WebRTC (`flutter_webrtc`):**
+  - *সুবিধা:* সম্পূর্ণ ফ্রি, ওপেন-সোর্স, কোনো থার্ড-পার্টি সাবস্ক্রিপশন ফি নেই।
+  - *অসুবিধা:* নিজস্ব Signaling এবং TURN সার্ভার সেটআপ ও রক্ষণাবেক্ষণ করতে হয়। গ্রুপ কলে (Mesh Architecture) ব্যান্ডউইথ ও মেমোরি অনেক বেশি লাগে।
+- **Cloud Media SDKs (Agora / LiveKit):**
+  - *সুবিধা:* বিল্ট-ইন গ্লোবাল এসডিএন (SDN) সার্ভার, কম লেটেন্সি, অটোমেটিক বিটরেট অ্যাডাপটেশন, ১-ক্লিকে স্ক্রিন শেয়ারিং ও গ্রুপ কল।
+  - *অসুবিধা:* নির্দিষ্ট ফ্রি লিমিট (যেমন: প্রথম ১০,০০০ মিনিট ফ্রি) অতিক্রম করলে প্রতি মিনিটে ডলার পে করতে হয়।
+
+---
+
+## 🔔 ২. লক স্ক্রিনে ইনকামিং কল (WhatsApp-এর মতো ফুল-স্ক্রিন কলিং)
+
+### প্রশ্ন ৩: অ্যাপ সম্পূর্ণ কিল করা বা ফোন লক থাকা অবস্থায় WhatsApp-এর মতো ইনকামিং কল কীভাবে আনবেন?
+
+**উত্তর (ডিটেইল):**
+সাধারণ পুশ নোটিফিকেশন শুধুমাত্র ব্যানার দেখাতে পারে, কিন্তু রিংটোন বাজিয়ে ফুল স্ক্রিন কলিং ডায়ালগ আনতে নেটিভ ফ্রেমওয়ার্ক দরকার:
+
+- **iOS:** Apple **CallKit** ফ্রেমওয়ার্ক (নেটিভ আইওএস ডায়ালার ইন্টারফেস)।
+- **Android:** Android **ConnectionService** বা হাই-প্রায়োরিটি ফুল-স্ক্রিন ইনটেন্ট (`USE_FULL_SCREEN_INTENT`)।
+
+**Flutter সমাধান (`flutter_callkit_incoming` প্যাকেজ):**
+1. সার্ভার থেকে ব্যাকগ্রাউন্ডে হাই-প্রায়োরিটি সাইলেন্ট ডেটা পুশ (FCM Data Message) পাঠানো হয়।
+2. ব্যাকগ্রাউন্ড পুশ হ্যান্ডলারে `FlutterCallkitIncoming.showCallNotification(params)` কল করা হয়।
+3. ফোন লক থাকলেও রিংটোন বেজে উঠবে এবং স্ক্রিনে Accept ও Decline বাটন আসবে।
+4. ব্যবহারকারী Accept বাটনে চাপ দিলে অ্যাপ চালু হয়ে সরাসরি অডিও/ভিডিও স্ক্রিনে নেভিগেট হবে।
+
+
+
+
+
+# অধ্যায় ১০: Background Location & Live Tracking (লাইভ ট্র্যাকিং)
+<a id="chap-10-location"></a>
+
+
+
+
+---
+
+## Background Live Location Tracking ও ব্যাটারি অপ্টিমাইজেশন
+<a id="chap-10-location-live-location-background-md"></a>
+
+
+# Background Live Location Tracking - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+রাইড-শেয়ারিং (Uber/Pathao) বা ফুড ডেলিভারি অ্যাপের জন্য ব্যাকগ্রাউন্ড লোকেশন ট্র্যাকিং ও ব্যাটারি অপ্টিমাইজেশন।
+
+---
+
+## 📍 ১. ফোরগ্রাউন্ড বনাম ব্যাকগ্রাউন্ড ট্র্যাকিং
+
+### প্রশ্ন ১: অ্যাপ মিনিমাইজ বা কিল করা থাকলেও কীভাবে ড্রাইভারের লাইভ লোকেশন ট্র্যাক করবেন?
+
+**উত্তর (ডিটেইল):**
+- **Foreground Tracking:** অ্যাপ যখন স্ক্রিনে খোলা থাকে, তখন সাধারণ `geolocator` স্ট্রিম দিয়ে সহজে লোকেশন পাওয়া যায়।
+- **Background Tracking:** ইউজার যখন অ্যাপ মিনিমাইজ করে অন্য অ্যাপ চালায় বা স্ক্রিন অফ করে দেয়, তখন অ্যান্ড্রয়েড ও আইওএস মেমোরি খালি করতে সাধারণ ব্যাকগ্রাউন্ড প্রসেস কিল করে দেয়।
+
+**প্রোডাকশন সমাধান:**
+1. **Android: Foreground Service (বাধ্যতামূলক):**
+   - নোটিফিকেশন বারে একটি স্থায়ী স্ট্যাটাস নোটিফিকেশন (Persistent Sticky Notification) দেখাতে হবে (যেমন: *"রাইডার ট্র্যাকিং চালু আছে"* )। এটি অপারেটিং সিস্টেমকে জানায় যে এই প্রসেসটি অত্যন্ত গুরুত্বপূর্ণ, তাই সিস্টেম এটিকে কিল করে না।
+   - প্যাকেজ: `flutter_background_service` অথবা `geolocator` এর অ্যান্ড্রয়েড ফোরগ্রাউন্ড সার্ভিস মোড।
+2. **iOS: Location Background Mode:**
+   - `Info.plist` ফাইলে `UIBackgroundModes` এ `location` কী যুক্ত করতে হবে।
+   - ব্যবহারকারীর কাছ থেকে `LocationAlways` (Always Allow) পারমিশন চাইতে হবে।
+
+---
+
+## 🔋 ২. ব্যাটারি অপ্টিমাইজেশন ও থ্রটলিং (Throttling)
+
+### প্রশ্ন ২: ব্যাকগ্রাউন্ড ট্র্যাকিংয়ে ব্যাটারি ড্রেন কীভাবে প্রতিরোধ করবেন? (ইন্টারভিউয়ের গুরুত্বপূর্ণ প্রশ্ন)
+
+**উত্তর (ডিটেইল):**
+যদি প্রতি সেকেন্ডে জিপিএস চিপ অন করা হয় এবং সার্ভারে HTTP রিকোয়েস্ট পাঠানো হয়, তবে আধা ঘণ্টার মধ্যে ফোনের চার্জ শেষ হয়ে যাবে এবং ফোন গরম হয়ে যাবে!
+
+**ইন্টারভিউ স্ট্যান্ডার্ড অপ্টিমাইজেশন টেকনিকসমূহ:**
+1. **Distance Filter ব্যবহার করা:** সময়ের ওপর ভিত্তি না করে দূরত্বের ওপর ভিত্তি করে আপডেট নিন:
+   ```dart
+   LocationSettings locationSettings = const LocationSettings(
+     accuracy: LocationAccuracy.high,
+     distanceFilter: 15, // ড্রাইভার কমপক্ষে ১৫ মিটার না নড়লে কোনো ইভেন্ট ফায়ার হবে না
+   );
+   ```
+2. **Activity Recognition (গাড়ি বনাম স্থবির অবস্থা):**
+   - ড্রাইভার যখন ট্রাফিক জ্যামে বা রেস্টুরেন্টে দাঁড়িয়ে আছে, তখন হাই-অ্যাকিউরেসি জিপিএস বন্ধ করে লো-পাওয়ার সেলুলার/ওয়াইফাই মোডে চলে যান।
+3. **Batching Server Updates:**
+   - প্রতি ১০ মিটারের জন্য আলাদা আলাদা HTTP কল না পাঠিয়ে, লোকাল অ্যারেতে ১০টি লোকেশন পয়েন্ট জমা করে একবারে একটি ব্যাচ রিকোয়েস্টে ব্যাকএন্ডে পাঠান (অথবা হালকা ওজনের WebSocket / MQTT প্রোটোকল ব্যবহার করুন)।
+
+
+
+
+
+---
+
+## Google Maps, Smooth Marker Animation ও রুট পলিলাইন
+<a id="chap-10-location-map-and-marker-animation-md"></a>
+
+
+# Google Maps & Smooth Marker Animation
+
+ম্যাপে গাড়ির আইকন মসৃণভাবে মুভ করানো, দিক পরিবর্তন (Bearing) এবং রুট পলিলাইন আঁকা।
+
+---
+
+## 🚗 ১. স্মুথ মার্কার অ্যানিমেশন (Marker Interpolation)
+
+### প্রশ্ন ১: Uber বা Pathao অ্যাপে গাড়িটি এক পয়েন্ট থেকে অন্য পয়েন্টে যাওয়ার সময় লাফিয়ে (Jump) না গিয়ে স্মুথলি কীভাবে গড়ায়?
+
+**উত্তর (ডিটেইল):**
+জিপিএস থেকে ডেটা আসে প্রতি ২-৫ সেকেন্ড পর পর বিচ্ছিন্ন কো-অর্ডিনেট (Discrete Points) হিসেবে। যদি সরাসরি মার্কারের পজিশন আপডেট করে দেন, তবে গাড়িটি হঠাৎ হঠাৎ লাফিয়ে নতুন জায়গায় চলে যাবে।
+
+**সমাধান: Linear Interpolation (`lerp`) & `AnimationController`:**
+পুরোনো পয়েন্ট `A` থেকে নতুন পয়েন্ট `B`-এর মাঝখানের পথটিকে একটি `Tween` অ্যানিমেশনের মাধ্যমে ৫০-১০০টি ছোট ছোট পয়েন্টে বিভক্ত করে প্রতি ফ্রেমে মার্কারের পজিশন আপডেট করা হয়:
+
+```dart
+// দুটি ল্যাটিচ্যুড/লংগিচ্যুডের মধ্যে মসৃণ মান বের করার গণিত
+double lerp(double start, double end, double fraction) {
+  return start + (end - start) * fraction;
+}
+
+LatLng interpolateLatLng(LatLng start, LatLng end, double fraction) {
+  return LatLng(
+    lerp(start.latitude, end.latitude, fraction),
+    lerp(start.longitude, end.longitude, fraction),
+  );
+}
+```
+
+---
+
+### প্রশ্ন ২: গাড়ি ঘোরার সময় গাড়ির মুখ (Bearing / Rotation Angle) কীভাবে ঠিক রাখবেন?
+
+**উত্তর (ডিটেইল):**
+গাড়ি যেদিকে যাচ্ছে, মার্কার আইকনটির মুখও সেদিকে ঘোরানো দরকার। এর জন্য পূর্বের পয়েন্ট এবং বর্তমান পয়েন্টের মধ্যে কোণ (Bearing/Heading) হিসাব করা হয়:
+
+```dart
+import 'dart:math' as math;
+
+double calculateBearing(LatLng start, LatLng end) {
+  double startLat = start.latitude * (math.pi / 180);
+  double startLng = start.longitude * (math.pi / 180);
+  double endLat = end.latitude * (math.pi / 180);
+  double endLng = end.longitude * (math.pi / 180);
+
+  double dLng = endLng - startLng;
+
+  double y = math.sin(dLng) * math.cos(endLat);
+  double x = math.cos(startLat) * math.sin(endLat) -
+      math.sin(startLat) * math.cos(endLat) * math.cos(dLng);
+
+  double heading = math.atan2(y, x);
+  return (heading * (180 / math.pi) + 360) % 360; // 0 to 360 degrees
+}
+```
+
+---
+
+## 🗺️ ২. রুট পলিলাইন (Route Polylines)
+
+### প্রশ্ন ৩: পিকআপ লোকেশন থেকে ড্রপ-অফ লোকেশন পর্যন্ত রাস্তার রুট (Polyline) কীভাবে আঁকা হয়?
+
+**উত্তর (ডিটেইল):**
+1. ব্যবহারকারীর পিকআপ এবং ড্রপ-অফ কো-অর্ডিনেট দিয়ে **Google Directions API**-তে কল করা হয়।
+2. API রেসপন্সে একটি এনকোডেড স্ট্রিং (`overview_polyline.points`) ফেরত আসে।
+3. প্যাকেজ `flutter_polyline_points` ব্যবহার করে সেই স্ট্রিংটিকে ডিকোড করে `List<LatLng>` তৈরি করা হয়।
+4. `GoogleMap` উইজেটের `polylines` প্রোপার্টিতে একটি `Polyline` সেট করে দিলে ম্যাপের রাস্তার উপর নীল দাগ দিয়ে রুট প্রদর্শিত হয়।
+
+
+
+
+
+# অধ্যায় ১১: Payment Gateways & In-App Purchase (পেমেন্ট গেটওয়ে)
+<a id="chap-11-payments"></a>
+
+
+
+
+---
+
+## Payment Gateway Security Architecture ও Webhook ফ্লো
+<a id="chap-11-payments-payment-architecture-md"></a>
+
+
+# Payment Gateway Security & Architecture - সম্পূর্ণ গাইড
+
+Flutter অ্যাপে পেমেন্ট গেটওয়ে ইন্টিগ্রেশনের আর্কিটেকচার, সিকিউরিটি রুলস এবং প্রোডাকশন ফ্লো।
+
+---
+
+## 🔒 ১. পেমেন্ট সিকিউরিটি ও গোল্ডেন রুলস
+
+### প্রশ্ন ১: পেমেন্ট ইন্টিগ্রেশনের সবচেয়ে বড় সিকিউরিটি রুল কোনটি? (ইন্টারভিউয়ের ট্রিক প্রশ্ন)
+
+> **গোল্ডেন রুল:** **কখনোই পেমেন্ট গেটওয়ের Private Key বা Secret Key মোবাইল অ্যাপের (Frontend) ভেতরে রাখবেন না!**
+
+**কেন রাখা যাবে না?**
+- যদি আপনি অ্যাপের ভেতরে Stripe Secret Key, bKash App Secret বা SSLCommerz Store Password হার্ডকোড করে রাখেন, তবে যেকোনো হ্যাকার APK ডিকম্পাইল করে আপনার সিক্রেট কি চুরি করে আপনার পুরো পেমেন্ট অ্যাকাউন্ট খালি করে দিতে পারে।
+- ইউজার যাতে মোবাইলের রিকোয়েস্ট ইন্টারসেপ্ট (Proxy / Man-in-the-Middle) করে পণ্যের মূল্য ১০০০ টাকার জায়গায় ১০ টাকা বানিয়ে না পাঠাতে পারে, তাই **মূল্য হিসাব এবং পেমেন্ট ইনিশিয়ালাইজেশন সবসময় সার্ভারে (Backend) হতে হবে**।
+
+---
+
+## 🔄 ২. নিরাপদ পেমেন্ট ফ্লো (Production Payment Flow)
+
+```
+[Flutter Mobile App]            [Your Backend Server]          [Payment Gateway (Stripe/bKash)]
+         │                                │                                   │
+         │ 1. Checkout (Item ID: 45)      │                                   │
+         ├───────────────────────────────►│                                   │
+         │                                │ 2. Calculate Real Price ($50)     │
+         │                                │    Create Payment Intent          │
+         │                                ├──────────────────────────────────►│
+         │                                │◄──────────────────────────────────┤
+         │                                │    Return Client Secret           │
+         │ 3. Return Client Secret        │                                   │
+         │◄───────────────────────────────┤                                   │
+         │                                                                    │
+         │ 4. Open Payment Sheet / Gateway Webview                            │
+         ├───────────────────────────────────────────────────────────────────►│
+         │ 5. User Enters Card / OTP                                          │
+         │◄───────────────────────────────────────────────────────────────────┤
+         │    Transaction Success                                             │
+         │                                                                    │
+         │                                │ 6. Webhook Notification (POST)   │
+         │                                │◄──────────────────────────────────┤
+         │                                │    Verify Signature & Deliver     │
+         │ 7. Fetch Order Status          │                                   │
+         ├───────────────────────────────►│                                   │
+```
+
+---
+
+### প্রশ্ন ২: Webhook কী এবং মোবাইল পেমেন্টে এটি কেন অপরিহার্য?
+
+**উত্তর (ডিটেইল):**
+- **সমস্যা:** ইউজার যখন ব্যাংকের পেজে টাকা পে করে, ঠিক সেই মুহূর্তে ইউজারের ফোনের ইন্টারনেট চলে যেতে পারে বা ইউজার অসাবধানতাবশত অ্যাপটি বন্ধ করে দিতে পারে। ফলে মোবাইল অ্যাপ হয়তো জানতেই পারল না যে টাকা কাটা হয়েছে।
+- **সমাধান (Webhook):** পেমেন্ট সফল হওয়ার পর গেটওয়ের সার্ভার সরাসরি আপনার ব্যাকএন্ড সার্ভারে একটি গোপন সিকিউর HTTP POST রিকোয়েস্ট পাঠায় (Webhook Event)। 
+- আপনার ব্যাকএন্ড গেটওয়ের ক্রিপ্টোগ্রাফিক সিগনেচার যাচাই করে ডেটাবেসে অর্ডার কনফার্ম করে। ফলে ইউজারের ফোনে নেট থাকুক বা না থাকুক, পেমেন্ট কখনো মিস হয় না!
+
+
+
+
+
+---
+
+## Popular Gateways: Stripe, bKash, SSLCommerz ও In-App Purchase
+<a id="chap-11-payments-popular-gateways-md"></a>
+
+
+# Popular Gateways - Stripe, bKash, SSLCommerz & In-App Purchase
+
+আন্তর্জাতিক ও স্থানীয় পেমেন্ট গেটওয়ে এবং অ্যাপল/গুগল ইন-অ্যাপ পারচেস গাইড।
+
+---
+
+## 💳 ১. Stripe Payment Gateway (`flutter_stripe`)
+
+### প্রশ্ন ১: Stripe Payment Sheet কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+Stripe কার্ডের তথ্য সরাসরি মার্চেন্ট অ্যাপের সার্ভারে যেতে দেয় না (PCI Compliance)। এর বদলে **PaymentSheet** ব্যবহার করা হয়:
+
+```dart
+import 'package:flutter_stripe/flutter_stripe.dart';
+
+Future<void> makePayment() async {
+  try {
+    // ১. ব্যাকএন্ড থেকে পেমেন্ট ইনটেন্ট এবং ক্লায়েন্ট সিক্রেট আনুন
+    final paymentIntentData = await myBackendService.createPaymentIntent(amount: 5000); // 50.00 USD
+
+    // ২. স্ট্রাইপ পেমেন্ট শিট ইনিশিয়ালাইজ করুন
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        paymentIntentClientSecret: paymentIntentData['client_secret'],
+        merchantDisplayName: 'My Shop Ltd',
+        style: ThemeMode.system,
+      ),
+    );
+
+    // ৩. ইউজারের সামনে নেটিভ কার্ড ডায়ালগ ওপেন করুন
+    await Stripe.instance.presentPaymentSheet();
+    print('পেমেন্ট সফলভাবে সম্পন্ন হয়েছে!');
+  } catch (e) {
+    print('পেমেন্ট ব্যর্থ হয়েছে: $e');
+  }
+}
+```
+
+---
+
+## 🇧🇩 ২. বাংলাদেশি পেমেন্ট গেটওয়ে (bKash & SSLCommerz)
+
+### প্রশ্ন ২: bKash Tokenized Checkout কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+bKash-এর আধুনিক ইন্টিগ্রেশন ৩টি ধাপে ঘটে:
+1. **Grant Token:** আপনার ব্যাকএন্ড bKash সার্ভার থেকে একটি টেম্পোরারি টোকেন নেয়।
+2. **Create Payment:** অর্ডারের মূল্য দিয়ে একটি পেমেন্ট URL এবং `paymentID` তৈরি করা হয়।
+3. **Webview / SDK Launch:** মোবাইল অ্যাপের ভেতরে সুরক্ষিত Webview ওপেন করা হয় যেখানে ইউজার bKash পিন ও ওটিপি দেয়।
+4. **Execute Payment:** ব্যবহারকারী পিন দেওয়ার পর ব্যাকএন্ড থেকে `executePayment` API কল করে ট্রানজেকশন সফল করতে হয়।
+
+---
+
+## 📱 ৩. In-App Purchase (IAP) বনাম সাধারণ পেমেন্ট গেটওয়ে
+
+### প্রশ্ন ৩: কখন Stripe/bKash ব্যবহার করবেন এবং কখন বাধ্যতামূলকভাবে Google Play Billing / Apple In-App Purchase ব্যবহার করতে হবে? (খুব জনপ্রিয় পলিসি প্রশ্ন)
+
+| পণ্যের ধরন | অনুমোদিত পেমেন্ট গেটওয়ে | উদাহরণ |
+| :--- | :--- | :--- |
+| **Physical Goods (বাস্তব পণ্য/সেবা)** | নিজস্ব পেমেন্ট গেটওয়ে (Stripe, bKash, SSLCommerz, Cards)। | দারাজ থেকে কাপড় কেনা, পাঠাও রাইড বুকিং, ফুডপান্ডা খাবার ডেলিভারি। |
+| **Digital Goods (ডিজিটাল কনটেন্ট/সাবস্ক্রিপশন)** | **বাধ্যতামূলকভাবে** Google Play Billing ও Apple In-App Purchase ব্যবহার করতে হবে! | Netflix/Spotify সাবস্ক্রিপশন, গেমিং কয়েন, ই-বুক আনলক করা, Tinder গোল্ড। |
+
+> **সতর্কতা:** ডিজিটাল কনটেন্টের জন্য যদি আপনি অ্যাপের ভেতর Stripe বা বিকাশ দিয়ে ক্রেডিট কার্ডের অপশন দেন, তবে Google ও Apple আপনার অ্যাপ **তৎক্ষণাৎ রিজেক্ট বা প্লে স্টোর থেকে রিমুভ** করে দেবে (যেমনটা Epic Games / Fortnite-এর ক্ষেত্রে হয়েছিল)!
+
+
+
+
+
+# অধ্যায় ১২: Testing in Flutter (ইউনিট, উইজেট ও ইন্টিগ্রেশন টেস্ট)
+<a id="chap-12-testing"></a>
+
+
+
+
+---
+
+## Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump
+<a id="chap-12-testing-testing-overview-md"></a>
+
+
+# Flutter Testing Overview - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+Flutter-এ টেস্টিং পিরামিড, ইউনিট টেস্ট, উইজেট টেস্ট এবং ইন্টিগ্রেশন টেস্টের বিস্তারিত নিয়মাবলী।
+
+---
+
+## 🔺 ১. Flutter Testing Pyramid (টেস্টিং পিরামিড)
+
+```
+        /  Integration Tests  \   (কম সংখ্যক, পুরো অ্যাপ ফ্লো, ধীরগতির)
+       /───────────────────────\
+      /      Widget Tests       \  (মাঝারি সংখ্যক, UI ও ইন্টারঅ্যাকশন)
+     /───────────────────────────\
+    /         Unit Tests          \ (সর্বোচ্চ সংখ্যক, দ্রুততম, বিজনেস লজিক)
+```
+
+### প্রশ্ন ১: Unit Test, Widget Test এবং Integration Test-এর পার্থক্য কী?
+
+| বৈশিষ্ট্য | Unit Test | Widget Test | Integration Test |
+| :--- | :--- | :--- | :--- |
+| **টেস্টের লক্ষ্য** | সিঙ্গেল ফাংশন, মেথড বা স্টেট লজিক। | এককটি উইজেট এবং তার UI ইন্টারঅ্যাকশন। | পুরো অ্যাপের বাস্তব ইউজ-কেস ফ্লো। |
+| **গতি (Speed)** | সুপার ফাস্ট (মিলিসেকেন্ডে শেষ হয়)। | দ্রুত (রিয়েল ডিভাইস লাগে না)। | কিছুটা ধীর (সিমুলেটর/রিয়েল ডিভাইসে চলে)। |
+| **প্যাকেজ** | `test` / `flutter_test` | `flutter_test` | `integration_test` |
+| **উদাহরণ** | ভ্যালিডেটর ফাংশন, ক্যালকুলেটর। | বাটন প্রেস করলে কাউন্টার বাড়ে কিনা। | লগইন ➔ হোমপেজ ➔ পেমেন্ট সম্পন্ন। |
+
+---
+
+## ⚙️ ২. Widget Testing ও `pump()` এর কাজ
+
+### প্রশ্ন ২: `tester.pump()` এবং `tester.pumpAndSettle()`-এর মধ্যে মূল পার্থক্য কী? (খুব জনপ্রিয় ইন্টারভিউ প্রশ্ন)
+
+**উত্তর (ডিটেইল):**
+- **`tester.pump()`:** ফ্রেমওয়ার্ককে শুধুমাত্র পরবর্তী ১টি ফ্রেম রেন্ডার করতে বলে (একটি নির্দিষ্ট সময় বিরতি সহ)।
+- **`tester.pumpAndSettle()`:** অ্যাপে চলমান সকল অ্যানিমেশন, মাইক্রোটাস্ক বা টাইমার শেষ না হওয়া পর্যন্ত এটি বারবার ফ্রেম পাম্প করতে থাকে এবং স্ক্রিন শান্ত বা স্থির (idle) অবস্থায় পৌঁছানোর পরেই কেবল পরবর্তী টেস্ট লাইনে যায়।
+  *(নোট: যদি কোনো ইনফিনিট লুপ বা অনির্দিষ্টকালের অ্যানিমেশন চালু থাকে, তবে `pumpAndSettle()` টাইমআউট এরর দেবে।)*
+
+**Widget Test-এর কোড উদাহরণ:**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  testWidgets('কাউন্টার বাটন চাপলে সংখ্যা ১ বাড়ে', (WidgetTester tester) async {
+    // ১. উইজেটটি টেস্ট এনভায়রনমেন্টে রেন্ডার করুন
+    await tester.pumpWidget(const MaterialApp(home: CounterScreen()));
+
+    // ২. যাচাই করুন শুরুতে '0' লেখা আছে কিনা
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // ৩. ফ্লোটিং অ্যাকশন বাটনে ট্যাপ করুন
+    await tester.tap(find.byType(FloatingActionButton));
+
+    // ৪. ফ্রেম রিবিল্ড হতে সময় দিন
+    await tester.pump();
+
+    // ৫. যাচাই করুন এখন '1' লেখা দেখা যাচ্ছে
+    expect(find.text('1'), findsOneWidget);
+  });
+}
+```
+
+
+
+
+
+---
+
+## Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests
+<a id="chap-12-testing-mocking-and-bloc-test-md"></a>
+
+
+# Mocking, Bloc Testing & Golden Tests - সম্পূর্ণ গাইড
+
+API ডিপেন্ডেন্সি মক করা, Bloc/Cubit-এর স্টেট ট্রানজিশন টেস্ট এবং গোল্ডেন UI টেস্ট।
+
+---
+
+## 🎭 ১. Mocking Dependencies (`mocktail`)
+
+### প্রশ্ন ১: টেস্ট চালানোর সময় Mocking কেন করা হয়? `mocktail` বনাম `mockito`-এর সুবিধা কী?
+
+**উত্তর (ডিটেইল):**
+- **কেন Mocking করা হয়:** টেস্ট চালানোর সময় যদি আসল API কল বা ডেটাবেস কোয়েরি চলে, তবে ইন্টারনেট চলে গেলে টেস্ট ফেইল করবে, সার্ভারে ফেক ডেটা জমা হবে এবং টেস্ট অনেক ধীরগতির হবে। তাই ফেক বা নকল অবজেক্ট দিয়ে রেসপন্স সিমুলেট করা হয়।
+- **`mocktail` এর সুবিধা:** `mockito`-তে কোড জেনারেশনের জন্য `build_runner` চালাতে হয়। `mocktail` এ কোনো `build_runner` লাগে না, সরাসরি Dart-এ মক অবজেক্ট লেখা যায়।
+
+**Mocktail কোড উদাহরণ:**
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+// আসল ক্লাসের নকল মক ক্লাস তৈরি করুন
+class MockUserRepository extends Mock implements UserRepository {}
+
+void main() {
+  late MockUserRepository mockRepo;
+
+  setUp(() {
+    mockRepo = MockUserRepository();
+  });
+
+  test('সফল ইউজার ফেচিং টেস্ট', () async {
+    // যখন fetchUser কল হবে, তখন নকল ডেটা রিটার্ন করো
+    when(() => mockRepo.getUser(1)).thenAnswer(
+      (_) async => User(id: 1, name: 'Rahim'),
+    );
+
+    final user = await mockRepo.getUser(1);
+
+    expect(user.name, 'Rahim');
+    verify(() => mockRepo.getUser(1)).called(1); // মেথডটি ঠিক একবার কল হয়েছে কিনা
+  });
+}
+```
+
+---
+
+## 🧱 ২. State Management Testing (`bloc_test`)
+
+### প্রশ্ন ২: Bloc বা Cubit কীভাবে টেস্ট করতে হয়?
+
+**উত্তর (ডিটেইল):**
+`bloc_test` প্যাকেজ ব্যবহার করে একটি অ্যাকশনের ফলে কোন কোন স্টেট ক্রমানুসারে নির্গত (emit) হচ্ছে তা যাচাই করা হয়:
+
+```dart
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('CounterCubit Test', () {
+    late CounterCubit cubit;
+
+    setUp(() {
+      cubit = CounterCubit();
+    });
+
+    tearDown(() {
+      cubit.close();
+    });
+
+    test('প্রাথমিক স্টেট ০ হতে হবে', () {
+      expect(cubit.state, 0);
+    });
+
+    blocTest<CounterCubit, int>(
+      'increment কল করলে 1 নির্গত (emit) করবে',
+      build: () => cubit,
+      act: (cubit) => cubit.increment(),
+      expect: () => [1],
+    );
+  });
+}
+```
+
+---
+
+## 🖼️ ৩. Golden Tests (গোল্ডেন টেস্ট)
+
+### প্রশ্ন ৩: Golden Test কী এবং এটি কখন ব্যবহার করা হয়?
+
+**উত্তর (ডিটেইল):**
+- **Golden Test:** এটি একটি পিক্সেল-বাই-পিক্সেল ভিজ্যুয়াল রিগ্রেশন টেস্ট। 
+- Flutter ফ্রেমওয়ার্ক একটি উইজেটকে মেমোরিতে রেন্ডার করে একটি রেফারেন্স ইমেজ (`.png`) ফাইলের সাথে তুলনা করে।
+- যদি কোনো ডিজাইনার বা ডেভেলপার অসাবধানতাবশত বাটনের কালার, প্যাডিং বা ফন্ট সাইজ ১ পিক্সেলও পরিবর্তন করে ফেলে, তবে গোল্ডেন টেস্ট সাথে সাথে ফেইল করে আপনাকে ডিফ (Diff) ইমেজ দেখিয়ে দেবে!
 
 

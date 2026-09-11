@@ -93,3 +93,34 @@
 - [Mock Interview ২: Architecture & State Management Focus](mock_interview/mock_interview_2.md)
 - [Mock Interview ৩: Performance, Memory & Advanced Concepts](mock_interview/mock_interview_3.md)
 - [Mock Interview ৪: Real-world Scenario & Problem Solving](mock_interview/mock_interview_4.md)
+
+# অধ্যায় ৭: App Deployment & Store Release (প্লে স্টোর ও অ্যাপ স্টোর)
+
+- [Google Play Store ডিপ্লয়মেন্ট, Keystore ও রিলিজ গাইড](06_deployment_and_release/playstore_deployment.md)
+- [Apple App Store ডিপ্লয়মেন্ট, Certificates ও TestFlight](06_deployment_and_release/appstore_deployment.md)
+- [In-App Updates ও Force Update মেকানিজম](06_deployment_and_release/in_app_updates.md)
+
+# অধ্যায় ৮: Debugging, Profiling & Crash Monitoring
+
+- [Flutter DevTools - পারফরম্যান্স, মেমোরি ও CPU প্রোফাইলিং](07_debugging_and_monitoring/flutter_devtools.md)
+- [Production Crash Reporting - Firebase Crashlytics & Sentry](07_debugging_and_monitoring/crashlytics_and_sentry.md)
+
+# অধ্যায় ৯: Real-Time Chat & Media Calling (চ্যাট ও কলিং)
+
+- [Real-Time Chatting Architecture (WebSocket, Socket.io, Firebase)](08_realtime_chat_and_media/realtime_chat.md)
+- [Audio & Video Calling (WebRTC, Agora, CallKit Incoming Calls)](08_realtime_chat_and_media/audio_video_calling.md)
+
+# অধ্যায় ১০: Background Location & Live Tracking (লাইভ ট্র্যাকিং)
+
+- [Background Live Location Tracking ও ব্যাটারি অপ্টিমাইজেশন](09_location_and_tracking/live_location_background.md)
+- [Google Maps, Smooth Marker Animation ও রুট পলিলাইন](09_location_and_tracking/map_and_marker_animation.md)
+
+# অধ্যায় ১১: Payment Gateways & In-App Purchase (পেমেন্ট গেটওয়ে)
+
+- [Payment Gateway Security Architecture ও Webhook ফ্লো](10_payment_gateways/payment_architecture.md)
+- [Popular Gateways: Stripe, bKash, SSLCommerz ও In-App Purchase](10_payment_gateways/popular_gateways.md)
+
+# অধ্যায় ১২: Testing in Flutter (ইউনিট, উইজেট ও ইন্টিগ্রেশন টেস্ট)
+
+- [Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump](11_testing_in_flutter/testing_overview.md)
+- [Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests](11_testing_in_flutter/mocking_and_bloc_test.md)

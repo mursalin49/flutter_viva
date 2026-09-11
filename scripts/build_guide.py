@@ -149,6 +149,73 @@ CHAPTERS = [
             ("mock_interview_3.md", "Mock Interview ৩: Performance, Memory & Advanced Concepts"),
             ("mock_interview_4.md", "Mock Interview ৪: Real-world Scenario & Problem Solving"),
         ]
+    },
+    {
+        "id": "chap-07-deployment",
+        "title": "অধ্যায় ৭: App Deployment & Store Release (প্লে স্টোর ও অ্যাপ স্টোর)",
+        "english_title": "Chapter 7: App Deployment & Store Release",
+        "badge": "Deployment & Release",
+        "dir": "06_deployment_and_release",
+        "files": [
+            ("playstore_deployment.md", "Google Play Store ডিপ্লয়মেন্ট, Keystore ও রিলিজ গাইড"),
+            ("appstore_deployment.md", "Apple App Store ডিপ্লয়মেন্ট, Certificates ও TestFlight"),
+            ("in_app_updates.md", "In-App Updates ও Force Update মেকানিজম"),
+        ]
+    },
+    {
+        "id": "chap-08-debugging",
+        "title": "অধ্যায় ৮: Debugging, Profiling & Crash Monitoring",
+        "english_title": "Chapter 8: Debugging, Profiling & Crash Monitoring",
+        "badge": "Debugging & Monitoring",
+        "dir": "07_debugging_and_monitoring",
+        "files": [
+            ("flutter_devtools.md", "Flutter DevTools - পারফরম্যান্স, মেমোরি ও CPU প্রোফাইলিং"),
+            ("crashlytics_and_sentry.md", "Production Crash Reporting - Firebase Crashlytics & Sentry"),
+        ]
+    },
+    {
+        "id": "chap-09-realtime",
+        "title": "অধ্যায় ৯: Real-Time Chat & Media Calling (চ্যাট ও কলিং)",
+        "english_title": "Chapter 9: Real-Time Chat & Media Calling",
+        "badge": "Chat & Calling",
+        "dir": "08_realtime_chat_and_media",
+        "files": [
+            ("realtime_chat.md", "Real-Time Chatting Architecture (WebSocket, Socket.io, Firebase)"),
+            ("audio_video_calling.md", "Audio & Video Calling (WebRTC, Agora, CallKit Incoming Calls)"),
+        ]
+    },
+    {
+        "id": "chap-10-location",
+        "title": "অধ্যায় ১০: Background Location & Live Tracking (লাইভ ট্র্যাকিং)",
+        "english_title": "Chapter 10: Background Location & Live Tracking",
+        "badge": "Location & Tracking",
+        "dir": "09_location_and_tracking",
+        "files": [
+            ("live_location_background.md", "Background Live Location Tracking ও ব্যাটারি অপ্টিমাইজেশন"),
+            ("map_and_marker_animation.md", "Google Maps, Smooth Marker Animation ও রুট পলিলাইন"),
+        ]
+    },
+    {
+        "id": "chap-11-payments",
+        "title": "অধ্যায় ১১: Payment Gateways & In-App Purchase (পেমেন্ট গেটওয়ে)",
+        "english_title": "Chapter 11: Payment Gateways & In-App Purchase",
+        "badge": "Payment Gateways",
+        "dir": "10_payment_gateways",
+        "files": [
+            ("payment_architecture.md", "Payment Gateway Security Architecture ও Webhook ফ্লো"),
+            ("popular_gateways.md", "Popular Gateways: Stripe, bKash, SSLCommerz ও In-App Purchase"),
+        ]
+    },
+    {
+        "id": "chap-12-testing",
+        "title": "অধ্যায় ১২: Testing in Flutter (ইউনিট, উইজেট ও ইন্টিগ্রেশন টেস্ট)",
+        "english_title": "Chapter 12: Testing in Flutter",
+        "badge": "Flutter Testing",
+        "dir": "11_testing_in_flutter",
+        "files": [
+            ("testing_overview.md", "Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump"),
+            ("mocking_and_bloc_test.md", "Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests"),
+        ]
     }
 ]
 
