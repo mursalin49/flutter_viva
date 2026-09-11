@@ -13,7 +13,6 @@ summary_lines = [
     "# Summary",
     "",
     "- [🎯 ভূমিকা ও গাইড পরিচিতি](README.md)",
-    "- [📖 সম্পূর্ণ মাস্টার নোট (All-in-One)](FLUTTER_INTERVIEW_COMPLETE_GUIDE.md)",
     ""
 ]
 
