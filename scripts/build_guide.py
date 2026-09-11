@@ -216,6 +216,38 @@ CHAPTERS = [
             ("testing_overview.md", "Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump"),
             ("mocking_and_bloc_test.md", "Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests"),
         ]
+    },
+    {
+        "id": "chap-13-architecture-security",
+        "title": "অধ্যায় ১৩: Clean Architecture, DI ও App Security",
+        "english_title": "Chapter 13: Clean Architecture, DI & Security",
+        "badge": "Architecture & Security",
+        "dir": "12_architecture_and_security",
+        "files": [
+            ("clean_architecture_and_di.md", "Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection"),
+            ("security_and_storage.md", "SSL Pinning, FlutterSecureStorage ও Root Detection"),
+        ]
+    },
+    {
+        "id": "chap-14-offline-notifications",
+        "title": "অধ্যায় ১৪: Offline-First, Caching & Push Notifications",
+        "english_title": "Chapter 14: Offline-First & Push Notifications",
+        "badge": "Offline & Notifications",
+        "dir": "13_offline_and_notifications",
+        "files": [
+            ("offline_first_and_caching.md", "Offline-First Caching (Hive/SQLite) ও Optimistic UI"),
+            ("push_notifications_and_deeplink.md", "Firebase FCM (Foreground/Background/Killed) ও Deep Linking"),
+        ]
+    },
+    {
+        "id": "chap-15-live-coding",
+        "title": "অধ্যায় ১৫: Senior Live Coding & Practical Challenges",
+        "english_title": "Chapter 15: Live Coding Challenges",
+        "badge": "Live Coding & Scenarios",
+        "dir": "14_scenario_and_challenges",
+        "files": [
+            ("coding_challenges.md", "Debounce Search, Infinite Scroll Pagination ও Image Cache"),
+        ]
     }
 ]
 

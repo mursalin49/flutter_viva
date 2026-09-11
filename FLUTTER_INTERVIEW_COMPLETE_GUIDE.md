@@ -132,6 +132,20 @@
 - [Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump](#chap-12-testing-testing-overview-md)
 - [Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests](#chap-12-testing-mocking-and-bloc-test-md)
 
+### [অধ্যায় ১৩: Clean Architecture, DI ও App Security](#chap-13-architecture-security)
+
+- [Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection](#chap-13-architecture-security-clean-architecture-and-di-md)
+- [SSL Pinning, FlutterSecureStorage ও Root Detection](#chap-13-architecture-security-security-and-storage-md)
+
+### [অধ্যায় ১৪: Offline-First, Caching & Push Notifications](#chap-14-offline-notifications)
+
+- [Offline-First Caching (Hive/SQLite) ও Optimistic UI](#chap-14-offline-notifications-offline-first-and-caching-md)
+- [Firebase FCM (Foreground/Background/Killed) ও Deep Linking](#chap-14-offline-notifications-push-notifications-and-deeplink-md)
+
+### [অধ্যায় ১৫: Senior Live Coding & Practical Challenges](#chap-15-live-coding)
+
+- [Debounce Search, Infinite Scroll Pagination ও Image Cache](#chap-15-live-coding-coding-challenges-md)
+
 
 ---
 
@@ -19915,5 +19929,672 @@ void main() {
 - **Golden Test:** এটি একটি পিক্সেল-বাই-পিক্সেল ভিজ্যুয়াল রিগ্রেশন টেস্ট। 
 - Flutter ফ্রেমওয়ার্ক একটি উইজেটকে মেমোরিতে রেন্ডার করে একটি রেফারেন্স ইমেজ (`.png`) ফাইলের সাথে তুলনা করে।
 - যদি কোনো ডিজাইনার বা ডেভেলপার অসাবধানতাবশত বাটনের কালার, প্যাডিং বা ফন্ট সাইজ ১ পিক্সেলও পরিবর্তন করে ফেলে, তবে গোল্ডেন টেস্ট সাথে সাথে ফেইল করে আপনাকে ডিফ (Diff) ইমেজ দেখিয়ে দেবে!
+
+
+
+
+
+# অধ্যায় ১৩: Clean Architecture, DI ও App Security
+<a id="chap-13-architecture-security"></a>
+
+
+
+
+---
+
+## Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection
+<a id="chap-13-architecture-security-clean-architecture-and-di-md"></a>
+
+
+# Clean Architecture ও Design Patterns - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+Flutter এন্টারপ্রাইজ অ্যাপ্লিকেশনে কোডবেস বড় হওয়ার সাথে সাথে কোডের স্কেলাবিলিটি, টেস্টেবিলিটি ও রক্ষণাবেক্ষণ নিশ্চিত করার আর্কিটেকচার।
+
+---
+
+## 🏛️ ১. Clean Architecture Overview
+
+Uncle Bob-এর Clean Architecture-এর মূল উদ্দেশ্য হলো: **বিজনেস লজিককে কোনো ফ্রেমওয়ার্ক বা এক্সটার্নাল লাইব্রেরির ওপর নির্ভরশীল না রাখা (Separation of Concerns)।**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Presentation Layer (UI, Pages, Widgets, Bloc / Riverpod) │
+└──────────────────────────────┬──────────────────────────────┘
+                               ▼ (ডিপেন্ড করে)
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Domain Layer (Entities, UseCases, Repository Interface)  │  <-- পিউর Dart, Flutter-স্বাধীন
+└──────────────────────────────▲──────────────────────────────┘
+                               │ (ইমপ্লিমেন্ট করে)
+┌──────────────────────────────┴──────────────────────────────┐
+│ 3. Data Layer (DataSources, Models, Repository Impl)        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### প্রশ্ন ১: Clean Architecture-এর ৩টি লেয়ারের দায়িত্ব কী এবং Domain Layer কেন সবচেয়ে গুরুত্বপূর্ণ?
+
+**উত্তর (ডিটেইল):**
+
+1. **Domain Layer (The Core):**
+   - এটি অ্যাপের মূল বিজনেস লজিক বহন করে।
+   - **সবচেয়ে গুরুত্বপূর্ণ বৈশিষ্ট্য:** এতে কোনো Flutter বা বাহ্যিক প্যাকেজের ইম্পোর্ট থাকে না (পিউর Dart)। ফলে Flutter ফ্রেমওয়ার্ক পরিবর্তন হলেও বিজনেস লজিকে কোনো হাত দিতে হয় না।
+   - উপাদান:
+     - **Entity:** অ্যাপের ডেটা মডেলের কোর রূপ (যেমন: `User` ক্লাস)।
+     - **UseCase:** নির্দিষ্ট একক কাজ (যেমন: `GetUserProfileUseCase`, `LoginUseCase`)।
+     - **Repository Interface:** ডেটা পাওয়ার চুক্তি বা অ্যাবস্ট্রাকশন (যেমন: `abstract class AuthRepository`)।
+
+2. **Data Layer:**
+   - ডেটা কোথা থেকে আসবে এবং কীভাবে রূপান্তর হবে তা নির্ধারণ করে।
+   - উপাদান:
+     - **Model:** Entity-কে এক্সটেন্ড করে এবং JSON Serialization (`fromJson`, `toJson`) হ্যান্ডেল করে।
+     - **DataSource:**
+       - *RemoteDataSource:* REST API (Dio/Http) বা Firebase কল করে।
+       - *LocalDataSource:* Shared Preferences, Hive বা SQLite থেকে ডেটা আনে/রাখে।
+     - **Repository Implementation:** Domain-এর অ্যাবস্ট্রাক্ট রিপোজিটরিকে বাস্তবায়ন করে এবং নেটওয়ার্ক চেক করে ক্যাশ বনাম রিমোট ডেটা রিটার্ন করে।
+
+3. **Presentation Layer:**
+   - ব্যবহারকারীর সাথে ইন্টারঅ্যাকশন ও স্ক্রিনে ডেটা দেখানো।
+   - উপাদান: UI Screens, Widgets, এবং State Management (Bloc/Cubit, Riverpod, বা ViewModel)।
+
+**Interview Tips:** ভাইভায় মনে রাখবেন—"Dependency Rule: বাইরের লেয়ারগুলো ভেতরের লেয়ারকে চেনে, কিন্তু ভেতরের লেয়ার (Domain) বাইরের কোনো লেয়ারকে চেনে না।"
+
+---
+
+### প্রশ্ন ২: Entity বনাম Model-এর পার্থক্য কী? কেন একই ক্লাসে সব রাখা হয় না?
+
+**উত্তর (ডিটেইল):**
+
+| বৈশিষ্ট্য | Entity | Model |
+| :--- | :--- | :--- |
+| **লেয়ার** | Domain Layer | Data Layer |
+| **লাইব্রেরি নির্ভরতা** | কোনো থার্ড পার্টি প্যাকেজ থাকে না (পিউর ডার্ট)। | `json_serializable`, `freezed` বা `equatable` থাকতে পারে। |
+| **ফাংশনালিটি** | শুধুমাত্র ফিল্ডস ও বিজনেস লজিক। | `fromJson()`, `toJson()`, `toEntity()` মেথড থাকে। |
+| **পরিবর্তনশীলতা** | ব্যাকএন্ডের API রেসপন্স পরিবর্তন হলেও Entity অপরিবর্তিত থাকে। | API-এর রেসপন্স কী বদলালে শুধু Model বদলায়। |
+
+**উদাহরণ:**
+```dart
+// Domain Layer: Entity
+class UserEntity {
+  final String id;
+  final String fullName;
+  final String email;
+
+  const UserEntity({required this.id, required this.fullName, required this.email});
+}
+
+// Data Layer: Model
+class UserModel extends UserEntity {
+  const UserModel({required super.id, required super.fullName, required super.email});
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['_id'] ?? '',
+      fullName: json['name'] ?? '',
+      email: json['email_address'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'name': fullName,
+    'email_address': email,
+  };
+}
+```
+
+---
+
+## 🧩 ২. Design Patterns & Dependency Injection
+
+### প্রশ্ন ৩: Repository Pattern কী এবং এটি ব্যবহারের সুবিধা কী?
+
+**উত্তর (ডিটেইল):**
+Repository Pattern হলো ডেটা সোর্স (API, Database, Cache) এবং বিজনেস লজিকের মধ্যে একটি মধ্যস্থতাকারী (Mediator) লেয়ার।
+
+**সুবিধা:**
+1. **ডিকাপলিং:** আপনার UI বা UseCase জানে না ডেটা কি সরাসরি সার্ভার থেকে এলো নাকি লোকাল SQLite থেকে।
+2. **টেস্টিং সুবিধা:** রিপোজিটরি অ্যাবস্ট্রাক্ট হওয়ার কারণে সহজেই Unit Test-এ Fake বা Mock Repository ইনজেক্ট করা যায়।
+3. **ক্যাশিং ম্যানেজমেন্ট:** অফলাইন সাপোর্ট দেওয়ার জন্য রিপোজিটরির ভেতরেই ডিসিশন নেওয়া যায়: নেটওয়ার্ক থাকলে API কল করে লোকাল ডিবি আপডেট করো, না থাকলে লোকাল ডেটা দাও।
+
+---
+
+### প্রশ্ন ৪: Dependency Injection (DI) কী এবং `get_it` কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+Dependency Injection হলো এমন একটি কৌশল যেখানে একটি অবজেক্ট তার প্রয়োজনীয় অন্যান্য ডিপেনডেন্সি নিজে তৈরি (instantiate) না করে বাইরে থেকে গ্রহণ করে (Inversion of Control)।
+
+`get_it` হলো ডার্টের একটি অত্যন্ত জনপ্রিয় **Service Locator**।
+
+**কেন সরাসরি `new ApiClient()` করব না?**
+যদি কোনো ক্লাসের ভেতরে হার্ডকোড করে ডিপেনডেন্সি তৈরি করা হয়, তবে ওই ক্লাসকে আলাদা করে ইউনিট টেস্ট করা অসম্ভব হয়ে যায়।
+
+**`get_it` ব্যবহারের বাস্তব উদাহরণ:**
+```dart
+import 'package:get_it/get_it.dart';
+
+final sl = GetIt.instance; // sl = Service Locator
+
+void initLocator() {
+  // ১. External / Network Clients (Singleton)
+  sl.registerLazySingleton<Dio>(() => Dio());
+
+  // ২. DataSources
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(dio: sl()),
+  );
+
+  // ৩. Repositories
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // ৪. UseCases
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+
+  // ৫. Blocs / Cubits (Factory - প্রতিবার নতুন ইন্সট্যান্স)
+  sl.registerFactory(() => AuthBloc(loginUseCase: sl()));
+}
+```
+
+> **Interview Tips:** `registerLazySingleton` কেবল তখনই ইন্সট্যান্স তৈরি করে যখন প্রথমবার এটিকে কল করা হয়। আর `registerFactory` প্রতিবার কল করার সময় একটি নতুন ফ্রেশ অবজেক্ট রিটার্ন করে (Bloc/Controller-এর জন্য উপযুক্ত)।
+
+
+
+
+
+---
+
+## SSL Pinning, FlutterSecureStorage ও Root Detection
+<a id="chap-13-architecture-security-security-and-storage-md"></a>
+
+
+# App Security & Reverse Engineering Protection - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+Flutter মোবাইল অ্যাপ্লিকেশনে ডেটা সিকিউরিটি, নেটওয়ার্ক স্নিফিং প্রতিরোধ, টোকেন স্টোরেজ এবং রিভার্স ইঞ্জিনিয়ারিং প্রটেকশন।
+
+---
+
+## 🛡️ ১. SSL Pinning (Certificate Pinning)
+
+### প্রশ্ন ১: SSL Pinning কী এবং ম্যান-ইন-দ্য-মিডল (MITM) অ্যাটাক কীভাবে রোধ করে?
+
+**উত্তর (ডিটেইল):**
+- **স্বাভাবিক HTTPS কানেকশন:** মোবাইল ফোন অপারেটিং সিস্টেমের (Android/iOS) ট্রাস্টেড CA (Certificate Authority)-র উপর নির্ভর করে এনক্রিপশন যাচাই করে। কোনো হ্যাকার যদি ইউজারের ফোনে নিজের একটি ফেইক রুট সার্টিফিকেট ইন্সটল করিয়ে প্রক্সি (যেমন: Charles Proxy, Burp Suite, Fiddler) চালু করে, তবে অ্যাপের সকল পাসওয়ার্ড ও API রিকোয়েস্ট/রেসপন্স পরিষ্কার টেক্সটে দেখতে পারে (MITM Attack)।
+- **SSL Pinning:** অ্যাপের ভেতরেই সার্ভারের নির্দিষ্ট পাবলিক কি (Public Key Hash) অথবা সার্টিফিকেট হার্ডকোড করে দেওয়া হয়। ফলে হ্যান্ডশেক করার সময় সার্ভার সার্টিফিকেট হুবহু ম্যাচ না করলে অ্যাপ কোনো কানেকশন এলাও করে না—এমনকি ফোনে ফেইক রুট সার্টিফিকেট থাকলেও রিকোয়েস্ট ব্লক হয়ে যায়।
+
+**Dio দিয়ে SHA-256 Public Key Pinning-এর উদাহরণ:**
+```dart
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+
+void setupSslPinning(Dio dio) {
+  // সার্ভার পাবলিক কি হ্যাশ (SPKI Fingerprint)
+  const expectedFingerprint = "9a73d9e840...b4f17c";
+
+  (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    SecurityContext sc = SecurityContext(withTrustedRoots: false);
+    // আপনি চাইলে কাস্টম .pem সার্টিফিকেট লোড করতে পারেন
+    // sc.setTrustedCertificatesBytes(certBytes);
+
+    HttpClient httpClient = HttpClient(context: sc);
+    httpClient.badCertificateCallback =
+        (X509Certificate cert, String host, int port) {
+      // যদি সার্টিফিকেট ফিঙ্গারপ্রিন্ট মিলে যায় তবেই true, অন্যথায় false
+      final sha256 = cert.sha256;
+      return sha256 == expectedFingerprint;
+    };
+    return httpClient;
+  };
+}
+```
+
+---
+
+## 🔐 ২. Secure Storage বনাম SharedPreferences
+
+### প্রশ্ন ২: SharedPreferences-এ সেনসিটিভ ডেটা রাখা কেন অনিরাপদ? `flutter_secure_storage` কীভাবে কাজ করে?
+
+**উত্তর (ডিটেইল):**
+
+1. **`shared_preferences` কেন অনিরাপদ:**
+   - অ্যান্ড্রয়েডে এটি প্লেইন XML ফাইল হিসেবে (`/data/data/com.example.app/shared_prefs/`) আন-এনক্রিপ্টেড অবস্থায় স্টোর হয়।
+   - রুট করা ফোন বা ব্যাকআপ এক্সপ্লোরার দিয়ে যে কেউ এই ফাইল ওপেন করে ইউজার টোকেন ও পাসওয়ার্ড চুরি করতে পারে।
+
+2. **`flutter_secure_storage` কীভাবে ডেটা সুরক্ষিত রাখে:**
+   - **Android:** এটি **Android Keystore** সিস্টেম ব্যবহার করে ডেটা AES এনক্রিপ্ট করে এবং এনক্রিপশন কিগুলো হার্ডওয়্যার সিকিউরিটি মডিউলে (TEE/StrongBox) সুরক্ষিত থাকে।
+   - **iOS:** এটি অ্যাপলের মিলিটারি-গ্রেড **Keychain Services** ব্যবহার করে, যা ডিভাইস লক থাকা অবস্থায় সম্পূর্ণ সুরক্ষিত থাকে।
+
+```dart
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+class SecureStorageService {
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
+  static Future<void> saveToken(String token) async {
+    await _storage.write(key: 'auth_token', value: token);
+  }
+
+  static Future<String?> getToken() async {
+    return await _storage.read(key: 'auth_token');
+  }
+}
+```
+
+---
+
+## 🚫 ৩. Root / Jailbreak Detection & API Keys
+
+### প্রশ্ন ৩: Jailbroken / Rooted ডিভাইসে ব্যাংকিং বা ফিনটেক অ্যাপ কেন রান করা ঝুঁকিপূর্ণ? কীভাবে এটি ডিটেক্ট করবেন?
+
+**উত্তর (ডিটেইল):**
+- রুটেড বা জেলব্রোকেন ডিভাইসে ওএস-এর স্যান্ডবক্সিং সিকিউরিটি ভেঙে যায়। ফ্রাইডা (Frida) বা এক্সপোজড (Xposed) ফ্রেমওয়ার্ক দিয়ে অ্যাপ মেমোরি ম্যানিপুলেট করা, বায়োমেট্রিক বাইপাস করা বা রানটাইমে কোড ইনজেকশন দেওয়া যায়।
+- ব্যাংকিং ও ওয়ালেট অ্যাপে `flutter_jailbreak_flag` বা `freerasp` প্যাকেজ ব্যবহার করে ডিভাইস রুট চেক করা হয় এবং রুট পাওয়া গেলে ব্যবহারকারীকে সতর্ক করে অ্যাপ ক্লোজ করে দেওয়া হয়।
+
+### প্রশ্ন ৪: Google Maps বা থার্ড-পার্টি API Secret Key কীভাবে সোর্স কোডে সুরক্ষিত রাখবেন?
+
+**উত্তর (ডিটেইল):**
+1. **ভুল পদ্ধতি:** সরাসরি Dart ফাইলের ভেতরে `static const apiKey = "AIzaSy..."` লেখা। কারণ APK ডিকম্পাইল করলেই স্ট্রিং হিসেবে কীটি পেয়ে যায়।
+2. **সঠিক পদ্ধতি:**
+   - **`--dart-define` ব্যবহার করা:**
+     ```bash
+     flutter run --dart-define=API_KEY=my_secret_key_123
+     ```
+     কোডে কল করা:
+     ```dart
+     const apiKey = String.fromEnvironment('API_KEY');
+     ```
+   - **প্রক্সি ব্যাকএন্ড আর্কিটেকচার:** সেনসিটিভ API যেমন OpenAI, Payment Secret Keys কখনো মোবাইল অ্যাপে রাখবেন না। মোবাইল ক্লায়েন্ট আপনার নিজস্ব সুরক্ষিত ব্যাকএন্ডে রিকোয়েস্ট পাঠাবে এবং ব্যাকএন্ড থার্ড-পার্টি API কল করবে।
+
+
+
+
+
+# অধ্যায় ১৪: Offline-First, Caching & Push Notifications
+<a id="chap-14-offline-notifications"></a>
+
+
+
+
+---
+
+## Offline-First Caching (Hive/SQLite) ও Optimistic UI
+<a id="chap-14-offline-notifications-offline-first-and-caching-md"></a>
+
+
+# Offline-First Architecture & Caching - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+ইন্টারনেট কানেকশন দুর্বল বা সম্পূর্ণ অফলাইনে থাকলেও অ্যাপ নিরবচ্ছিন্নভাবে চালু রাখা এবং নেটওয়ার্ক আসলে ডেটা স্বয়ংক্রিয়ভাবে ব্যাকএন্ডের সাথে সিঙ্ক করার কৌশল।
+
+---
+
+## 📶 ১. Offline-First স্ট্র্যাটেজি ও সিঙ্কিং প্যাটার্ন
+
+### প্রশ্ন ১: Cache-Then-Network বনাম Network-First স্ট্র্যাটেজির মধ্যে পার্থক্য কী?
+
+**উত্তর (ডিটেইল):**
+
+1. **Network-First (অনলাইন-ফার্স্ট):**
+   - অ্যাপ প্রথমে সার্ভারে রিকোয়েস্ট পাঠাবে।
+   - সার্ভার ফেইল করলে বা টাইমআউট হলে ক্যাশ ডেটা দেখাবে।
+   - *অসুবিধা:* নেটওয়ার্ক ধীরগতির হলে ইউজারকে বেশ কয়েক সেকেন্ড ব্ল্যাংক লোডার দেখতে হয়।
+
+2. **Cache-Then-Network (Offline-First Best Practice):**
+   - স্ক্রিন ওপেন হওয়ামাত্রই প্রথমে লোকাল ডেটাবেস (Hive/Isar/SQLite) থেকে ইনস্ট্যান্ট ক্যাশ করা ডেটা স্ক্রিনে রেন্ডার করে দেয় (জিরো লোডিং টাইম)।
+   - একই সময়ে ব্যাকগ্রাউন্ডে সাইলেন্টলি সার্ভারে API কল করা হয়।
+   - সার্ভার থেকে নতুন ডেটা আসামাত্রই লোকাল ক্যাশ আপডেট হয় এবং UI স্মুথলি রিফ্রেশ হয়ে যায়।
+
+```
+[UI Screen Opens]
+      ├── 1. Read Local DB ────────► Render Immediately (0ms)
+      └── 2. Call Remote API (Background)
+               │
+               ▼
+         [API Success] ────────► Update Local DB ────► UI Smooth Refresh
+```
+
+---
+
+### প্রশ্ন ২: Hive, Isar এবং SQLite (sqflite / drift)-এর মধ্যে পার্থক্য কী? কখন কোনটি বেছে নেবেন?
+
+**উত্তর (ডিটেইল):**
+
+| বৈশিষ্ট্য | Hive / Isar | SQLite (`sqflite` / `drift`) |
+| :--- | :--- | :--- |
+| **ডেটাবেস ধরন** | NoSQL (Key-Value / Document based) | Relational SQL (Tables, Rows, Columns) |
+| **গতি (Speed)** | সুপার ফাস্ট (মেমোরি ম্যাপিং ও বাইনারি ফরম্যাট)। | মাঝারি থেকে দ্রুত (Disk I/O ও SQL parsing লাগে)। |
+| **জটিল কুয়েরি** | রিলেশন ও জয়েন (Join) অপারেশন সীমিত। | শক্তিশালী SQL কুয়েরি, Foreign Key, Complex Joins। |
+| **কখন ব্যবহার করবেন?** | ইউজার প্রেফারেন্স, চ্যাট হিস্ট্রি, ক্যাশ ডেটা, দ্রুত রিড/রাইট প্রয়োজন এমন ডেটা। | ই-কমার্স অ্যাপ, ইনভেন্টরি, অফলাইন সেলস বা রিলেশনাল ডেটাবেস প্রয়োজন হলে। |
+
+---
+
+### প্রশ্ন ৩: Optimistic UI Updates কী এবং কেন এটি ব্যবহার করা হয়?
+
+**উত্তর (ডিটেইল):**
+- **ধারণা:** ইউজার যখন কোনো সোশ্যাল মিডিয়া অ্যাপে "Like" বাটনে ট্যাপ করে বা কমেন্ট করে, তখন সার্ভার থেকে "Like Success" রেসপন্স আসার জন্য অপেক্ষা না করে সাথে সাথে UI-তে লাইক কাউন্ট বাড়িয়ে দেওয়া এবং হার্ট আইকন ফিল করে দেওয়া।
+- **কেন জরুরি:** এটি ইউজারকে অ্যাপটি সুপার-রেসপন্সিভ এবং ফ্লুইড মনে করায়।
+- **রোলব্যাক হ্যান্ডলিং:** ব্যাকগ্রাউন্ডের API কল যদি নেটওয়ার্ক এরর বা সার্ভার ক্র্যাশের কারণে ফেইল করে, তবে একটি স্ন্যাকবার (Snackbar) মেসেজ দিয়ে UI-এর স্টেট আগের অবস্থায় রোলব্যাক করতে হয়।
+
+
+
+
+
+---
+
+## Firebase FCM (Foreground/Background/Killed) ও Deep Linking
+<a id="chap-14-offline-notifications-push-notifications-and-deeplink-md"></a>
+
+
+# Push Notifications & Deep Linking - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+Firebase Cloud Messaging (FCM) দিয়ে নোটিফিকেশন হ্যান্ডলিং এবং ইউনিভার্সাল/অ্যাপ লিংক দিয়ে নির্দিষ্ট স্ক্রিনে ইউজার রিডাইরেক্ট করার প্র্যাকটিক্যাল টেকনিক।
+
+---
+
+## 🔔 ১. Firebase Cloud Messaging (FCM)
+
+### প্রশ্ন ১: FCM-এ Foreground, Background, এবং Terminated স্টেটে নোটিফিকেশন হ্যান্ডলিং কীভাবে আলাদা?
+
+**উত্তর (ডিটেইল):**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Foreground (অ্যাপ ওপেন ও ইউজারের সামনে একটিভ)            │
+│    -> FirebaseMessaging.onMessage.listen(...)              │
+│    -> ডিফল্ট সিস্টেম পপআপ দেখায় না, flutter_local_notifications │
+│       দিয়ে ম্যানুয়ালি হেডস-আপ ব্যানার তৈরি করতে হয়।          │
+├─────────────────────────────────────────────────────────────┤
+│ 2. Background (অ্যাপ মিনিমাইজড হয়ে রিসেন্ট অ্যাপসে আছে)      │
+│    -> FirebaseMessaging.onBackgroundMessage(...)           │
+│    -> টপ-লেভেল বা static ফাংশন হতে হবে (@pragma vm-entry)   │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Terminated / Killed (ইউজার সোয়াইপ করে অ্যাপ বন্ধ করেছে) │
+│    -> FirebaseMessaging.instance.getInitialMessage()       │
+│    -> নোটিফিকেশনে ট্যাপ করে অ্যাপ খুললে এই মেথডে ডেটা পাওয়া যায়│
+└─────────────────────────────────────────────────────────────┘
+```
+
+**বাস্তব কোড উদাহরণ:**
+
+```dart
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Background handler অবশ্যই টপ-লেভেল ফাংশন হতে হবে
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("Background Message ID: ${message.messageId}");
+}
+
+void setupPushNotifications() {
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // ১. Foreground নোটিফিকেশন
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Foreground Message: ${message.notification?.title}");
+    // এখানে flutter_local_notifications দিয়ে ব্যানার দেখান
+  });
+
+  // ২. Background অবস্থায় নোটিফিকেশন ট্যাপ করলে
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    _navigateToDetailScreen(message.data['product_id']);
+  });
+
+  // ৩. Terminated অবস্থায় নোটিফিকেশন ট্যাপ করে অ্যাপ ওপেন করলে
+  FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null) {
+      _navigateToDetailScreen(message.data['product_id']);
+    }
+  });
+}
+
+void _navigateToDetailScreen(String? id) {
+  // Navigation লজিক (GoRouter বা Navigator)
+}
+```
+
+---
+
+### প্রশ্ন ২: Notification Payload বনাম Data-only Payload-এর মধ্যে পার্থক্য কী? সাইলেন্ট নোটিফিকেশন কী?
+
+**উত্তর (ডিটেইল):**
+
+- **Notification Payload (`"notification": {"title": "Hi", "body": "Hello"}`):**
+  - ব্যাকগ্রাউন্ডে থাকলে ওএস সরাসরি সিস্টেম ট্রে-তে ব্যানার দেখিয়ে দেয়। আপনার ডার্ট কোড রান করার সুযোগ পায় না যতক্ষণ না ইউজার নোটিফিকেশনে ট্যাপ করে।
+- **Data-only Payload (`"data": {"key": "value"}`):**
+  - এতে কোনো ভিজ্যুয়াল নোটিফিকেশন সরাসরি তৈরি হয় না। ওএস অ্যাপের ব্যাকগ্রাউন্ড হ্যান্ডলারকে জাগিয়ে দেয় (Wake up)।
+  - **Silent Notification:** অ্যাপ ব্যাকগ্রাউন্ডে গোপনে ডেটা ফেচ বা সিঙ্ক করতে পারে, এবং ডার্ট কোড নিজে সিদ্ধান্ত নিতে পারে নোটিফিকেশন দেখাবে কিনা।
+
+---
+
+## 🔗 ২. Deep Linking (App Links & Universal Links)
+
+### প্রশ্ন ৩: Custom Scheme বনাম App Links / Universal Links-এর পার্থক্য কী?
+
+**উত্তর (ডিটেইল):**
+
+1. **Custom Scheme (`myapp://product/123`):**
+   - ব্রাউজার কোনো ডোমেইন ভেরিফিকেশন করে না। যদি দুটি অ্যাপ একই স্কিম রেজিস্টার করে, তবে ইউজারের ফোনে কনফ্লিক্ট ডায়ালগ আসে (Disambiguation dialog)।
+2. **App Links (Android) & Universal Links (iOS) (`https://mywebsite.com/product/123`):**
+   - এটি স্ট্যান্ডার্ড HTTPS URL।
+   - **ডোমেইন ভেরিফিকেশন:** আপনার সার্ভারে `.well-known/assetlinks.json` (Android) এবং `apple-app-site-association` (iOS) ফাইল রাখতে হয় যা প্রমাণ করে আপনিই ডোমেইনের মালিক।
+   - ফোনে অ্যাপ ইন্সটল থাকলে সরাসরি কোনো ব্রাউজার ছাড়াই এক ক্লিকে অ্যাপের নির্দিষ্ট স্ক্রিন ওপেন হয়ে যাবে। অ্যাপ ইন্সটল না থাকলে স্বাভাবিক ব্রাউজার ওয়েবসাইটে চলে যাবে।
+
+
+
+
+
+# অধ্যায় ১৫: Senior Live Coding & Practical Challenges
+<a id="chap-15-live-coding"></a>
+
+
+
+
+---
+
+## Debounce Search, Infinite Scroll Pagination ও Image Cache
+<a id="chap-15-live-coding-coding-challenges-md"></a>
+
+
+# Senior Live Coding & Scenario-Based Challenges - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর
+
+টেকনিক্যাল ইন্টারভিউয়ের লাইভ কোডিং রাউন্ডে এবং মেশিন টেস্টে প্রায়ই যেসব প্র্যাকটিক্যাল কোডিং প্রবলেম সমাধান করতে দেওয়া হয়।
+
+---
+
+## 🔍 ১. সার্চ বারে Debounce & Throttle প্যাটার্ন
+
+### প্রশ্ন ১: Debounce কী? সার্চ বারে প্রতি ক্যারেক্টার টাইপ করার সাথে সাথে API কল রোধ করার জন্য এটি কীভাবে লিখবেন?
+
+**উত্তর ও লাইভ কোডিং সলিউশন:**
+
+- **Debounce:** ইউজার যখন দ্রুত টাইপ করতে থাকে, তখন কোনো রিকোয়েস্ট পাঠানো হবে না। ইউজার টাইপিং থামিয়ে একটি নির্দিষ্ট সময় (যেমন ৫০০ মিলিসেকেন্ড) অপেক্ষা করলেই কেবলমাত্র ফাইনাল কি-ওয়ার্ড দিয়ে API কল হবে।
+
+**Timer দিয়ে কাস্টম Debouncer ক্লাস:**
+
+```dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  Debouncer({this.milliseconds = 500});
+
+  void run(VoidCallback action) {
+    _timer?.cancel(); // আগের চলমান টাইমার বাতিল করুন
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void dispose() {
+    _timer?.cancel();
+  }
+}
+
+// UI-তে ব্যবহার:
+class ProductSearchScreen extends StatefulWidget {
+  const ProductSearchScreen({super.key});
+
+  @override
+  State<ProductSearchScreen> createState() => _ProductSearchScreenState();
+}
+
+class _ProductSearchScreenState extends State<ProductSearchScreen> {
+  final _debouncer = Debouncer(milliseconds: 500);
+
+  void _onSearchChanged(String query) {
+    if (query.trim().isEmpty) return;
+
+    _debouncer.run(() {
+      print("🔍 API Call Triggered for: $query");
+      // apiService.searchProducts(query);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debouncer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Search Products')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextField(
+          decoration: const InputDecoration(
+            hintText: 'Search...',
+            prefixIcon: Icon(Icons.search),
+          ),
+          onChanged: _onSearchChanged,
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 📜 ২. Infinite Scroll Pagination (লোড মোর)
+
+### প্রশ্ন ২: `ScrollController` দিয়ে অফিশিয়াল উপায়ে এন্ডলেস স্ক্রলিং বা ইনফিনিট পেজিনেশন কীভাবে কোড করবেন?
+
+**উত্তর ও লাইভ কোডিং সলিউশন:**
+
+```dart
+import 'package:flutter/material.dart';
+
+class PaginatedUserList extends StatefulWidget {
+  const PaginatedUserList({super.key});
+
+  @override
+  State<PaginatedUserList> createState() => _PaginatedUserListState();
+}
+
+class _PaginatedUserListState extends State<PaginatedUserList> {
+  final ScrollController _scrollController = ScrollController();
+  final List<String> _items = [];
+  int _page = 1;
+  bool _isLoading = false;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNextPage();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    // ইউজার স্ক্রলের ৮০% পার হলেই পরবর্তী পেজ লোড ট্রিগার করুন
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      if (!_isLoading && _hasMore) {
+        _fetchNextPage();
+      }
+    }
+  }
+
+  Future<void> _fetchNextPage() async {
+    setState(() => _isLoading = true);
+
+    // ফেক নেটওয়ার্ক লেটেন্সি
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (_page > 3) {
+      setState(() {
+        _hasMore = false;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final newItems = List.generate(15, (index) => "Item #Page $_page - Index $index");
+    setState(() {
+      _page++;
+      _items.addAll(newItems);
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Infinite Scroll')),
+      body: ListView.builder(
+        controller: _scrollController,
+        itemCount: _items.length + (_hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == _items.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return ListTile(title: Text(_items[index]));
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 🖼️ ৩. মেমোরি-দক্ষ ইমেজ লোডিং ও স্ক্রলিং অপ্টিমাইজেশন
+
+### প্রশ্ন ৩: `ListView.builder`-এ অনেক বেশি বড় রেজোলিউশনের ইমেজ স্ক্রল করার সময় OOM (Out of Memory) বা ল্যাগিং রোধ করতে কী করবেন?
+
+**উত্তর (ডিটেইল):**
+
+1. **`memCacheWidth` ও `memCacheHeight` ব্যবহার করা:**
+   - অরিজিনাল ইমেজ ৪০০০x৩০০০ হলেও মোবাইল স্ক্রিনের থাম্বনেইল হয়তো মাত্র ৩০০x৩০০। 
+   - মেমোরিতে পুরো ইমেজ ডিকোড না করে সাইজ স্পেসিফাই করুন:
+   ```dart
+   Image.network(
+     'https://example.com/image.jpg',
+     cacheWidth: 300,
+     cacheHeight: 300,
+   );
+   ```
+2. **`cached_network_image` প্যাকেজ:** ডিস্ক ক্যাশিং এবং অটোমেটিক মেমোরি ইভিকশন (LRU Cache) হ্যান্ডেল করে।
+3. **`ListView` অপ্টিমাইজেশন ফ্ল্যাগ:**
+   - `addAutomaticKeepAlives: false` (স্ক্রিন থেকে সরে গেলে উইজেট মেমোরি ক্লিয়ার করে দেওয়া)।
+   - `addRepaintBoundaries: true` (প্রতিটি আইটেমের ড্রয়িং যাতে পাশের আইটেমের উপর প্রভাব না ফেলে)।
 
 

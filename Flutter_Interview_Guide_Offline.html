@@ -857,6 +857,26 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li><a href="#chap-12-testing-mocking-and-bloc-test-md" class="toc-file-link">Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests</a></li>
 </ul>
 </div>
+<div class="toc-chapter">
+<a href="#chap-13-architecture-security" class="toc-chap-link"><strong>অধ্যায় ১৩: Clean Architecture, DI ও App Security</strong></a>
+<ul class="toc-file-list">
+<li><a href="#chap-13-architecture-security-clean-architecture-and-di-md" class="toc-file-link">Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection</a></li>
+<li><a href="#chap-13-architecture-security-security-and-storage-md" class="toc-file-link">SSL Pinning, FlutterSecureStorage ও Root Detection</a></li>
+</ul>
+</div>
+<div class="toc-chapter">
+<a href="#chap-14-offline-notifications" class="toc-chap-link"><strong>অধ্যায় ১৪: Offline-First, Caching &amp; Push Notifications</strong></a>
+<ul class="toc-file-list">
+<li><a href="#chap-14-offline-notifications-offline-first-and-caching-md" class="toc-file-link">Offline-First Caching (Hive/SQLite) ও Optimistic UI</a></li>
+<li><a href="#chap-14-offline-notifications-push-notifications-and-deeplink-md" class="toc-file-link">Firebase FCM (Foreground/Background/Killed) ও Deep Linking</a></li>
+</ul>
+</div>
+<div class="toc-chapter">
+<a href="#chap-15-live-coding" class="toc-chap-link"><strong>অধ্যায় ১৫: Senior Live Coding &amp; Practical Challenges</strong></a>
+<ul class="toc-file-list">
+<li><a href="#chap-15-live-coding-coding-challenges-md" class="toc-file-link">Debounce Search, Infinite Scroll Pagination ও Image Cache</a></li>
+</ul>
+</div>
   </aside>
 
   <!-- Main Content -->
@@ -18632,6 +18652,632 @@ bKash-এর আধুনিক ইন্টিগ্রেশন ৩টি ধ�
 - <strong>Golden Test:</strong> এটি একটি পিক্সেল-বাই-পিক্সেল ভিজ্যুয়াল রিগ্রেশন টেস্ট। <br>
 - Flutter ফ্রেমওয়ার্ক একটি উইজেটকে মেমোরিতে রেন্ডার করে একটি রেফারেন্স ইমেজ (<code>.png</code>) ফাইলের সাথে তুলনা করে।<br>
 - যদি কোনো ডিজাইনার বা ডেভেলপার অসাবধানতাবশত বাটনের কালার, প্যাডিং বা ফন্ট সাইজ ১ পিক্সেলও পরিবর্তন করে ফেলে, তবে গোল্ডেন টেস্ট সাথে সাথে ফেইল করে আপনাকে ডিফ (Diff) ইমেজ দেখিয়ে দেবে!</p>
+</div>
+
+</div>
+
+<div class="chapter-block" id="chap-13-architecture-security">
+<div class="chapter-header">
+<span class="chapter-badge">Architecture & Security</span>
+<h1 class="chapter-title">অধ্যায় ১৩: Clean Architecture, DI ও App Security</h1>
+<p class="chapter-subtitle">Chapter 13: Clean Architecture, DI &amp; Security</p>
+</div>
+<div class="file-section" id="chap-13-architecture-security-clean-architecture-and-di-md">
+<div class="section-header-tag"><span class="file-badge">12_architecture_and_security/clean_architecture_and_di.md</span></div>
+<h2 class="section-title">Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection</h2>
+<h1 id="clean-architecture-design-patterns-">Clean Architecture ও Design Patterns - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর</h1>
+<p>Flutter এন্টারপ্রাইজ অ্যাপ্লিকেশনে কোডবেস বড় হওয়ার সাথে সাথে কোডের স্কেলাবিলিটি, টেস্টেবিলিটি ও রক্ষণাবেক্ষণ নিশ্চিত করার আর্কিটেকচার।</p>
+<hr>
+<h2 id="clean-architecture-overview">🏛️ ১. Clean Architecture Overview</h2>
+<p>Uncle Bob-এর Clean Architecture-এর মূল উদ্দেশ্য হলো: <strong>বিজনেস লজিককে কোনো ফ্রেমওয়ার্ক বা এক্সটার্নাল লাইব্রেরির ওপর নির্ভরশীল না রাখা (Separation of Concerns)।</strong></p>
+<div class="codehilite"><pre><span></span><code>┌─────────────────────────────────────────────────────────────┐
+│ 1. Presentation Layer (UI, Pages, Widgets, Bloc / Riverpod) │
+└──────────────────────────────┬──────────────────────────────┘
+                               ▼ (ডিপেন্ড করে)
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Domain Layer (Entities, UseCases, Repository Interface)  │  &lt;-- পিউর Dart, Flutter-স্বাধীন
+└──────────────────────────────▲──────────────────────────────┘
+                               │ (ইমপ্লিমেন্ট করে)
+┌──────────────────────────────┴──────────────────────────────┐
+│ 3. Data Layer (DataSources, Models, Repository Impl)        │
+└─────────────────────────────────────────────────────────────┘
+</code></pre></div>
+
+<hr>
+<h3 id="clean-architecture-domain-layer">প্রশ্ন ১: Clean Architecture-এর ৩টি লেয়ারের দায়িত্ব কী এবং Domain Layer কেন সবচেয়ে গুরুত্বপূর্ণ?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ol>
+<li>
+<p><strong>Domain Layer (The Core):</strong><br>
+   - এটি অ্যাপের মূল বিজনেস লজিক বহন করে।<br>
+   - <strong>সবচেয়ে গুরুত্বপূর্ণ বৈশিষ্ট্য:</strong> এতে কোনো Flutter বা বাহ্যিক প্যাকেজের ইম্পোর্ট থাকে না (পিউর Dart)। ফলে Flutter ফ্রেমওয়ার্ক পরিবর্তন হলেও বিজনেস লজিকে কোনো হাত দিতে হয় না।<br>
+   - উপাদান:</p>
+<ul>
+<li><strong>Entity:</strong> অ্যাপের ডেটা মডেলের কোর রূপ (যেমন: <code>User</code> ক্লাস)।</li>
+<li><strong>UseCase:</strong> নির্দিষ্ট একক কাজ (যেমন: <code>GetUserProfileUseCase</code>, <code>LoginUseCase</code>)।</li>
+<li><strong>Repository Interface:</strong> ডেটা পাওয়ার চুক্তি বা অ্যাবস্ট্রাকশন (যেমন: <code>abstract class AuthRepository</code>)।</li>
+</ul>
+</li>
+<li>
+<p><strong>Data Layer:</strong><br>
+   - ডেটা কোথা থেকে আসবে এবং কীভাবে রূপান্তর হবে তা নির্ধারণ করে।<br>
+   - উপাদান:</p>
+<ul>
+<li><strong>Model:</strong> Entity-কে এক্সটেন্ড করে এবং JSON Serialization (<code>fromJson</code>, <code>toJson</code>) হ্যান্ডেল করে।</li>
+<li><strong>DataSource:</strong></li>
+<li><em>RemoteDataSource:</em> REST API (Dio/Http) বা Firebase কল করে।</li>
+<li><em>LocalDataSource:</em> Shared Preferences, Hive বা SQLite থেকে ডেটা আনে/রাখে।</li>
+<li><strong>Repository Implementation:</strong> Domain-এর অ্যাবস্ট্রাক্ট রিপোজিটরিকে বাস্তবায়ন করে এবং নেটওয়ার্ক চেক করে ক্যাশ বনাম রিমোট ডেটা রিটার্ন করে।</li>
+</ul>
+</li>
+<li>
+<p><strong>Presentation Layer:</strong><br>
+   - ব্যবহারকারীর সাথে ইন্টারঅ্যাকশন ও স্ক্রিনে ডেটা দেখানো।<br>
+   - উপাদান: UI Screens, Widgets, এবং State Management (Bloc/Cubit, Riverpod, বা ViewModel)।</p>
+</li>
+</ol>
+<p><strong>Interview Tips:</strong> ভাইভায় মনে রাখবেন—"Dependency Rule: বাইরের লেয়ারগুলো ভেতরের লেয়ারকে চেনে, কিন্তু ভেতরের লেয়ার (Domain) বাইরের কোনো লেয়ারকে চেনে না।"</p>
+<hr>
+<h3 id="entity-model-">প্রশ্ন ২: Entity বনাম Model-এর পার্থক্য কী? কেন একই ক্লাসে সব রাখা হয় না?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">বৈশিষ্ট্য</th>
+<th style="text-align: left;">Entity</th>
+<th style="text-align: left;">Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>লেয়ার</strong></td>
+<td style="text-align: left;">Domain Layer</td>
+<td style="text-align: left;">Data Layer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>লাইব্রেরি নির্ভরতা</strong></td>
+<td style="text-align: left;">কোনো থার্ড পার্টি প্যাকেজ থাকে না (পিউর ডার্ট)।</td>
+<td style="text-align: left;"><code>json_serializable</code>, <code>freezed</code> বা <code>equatable</code> থাকতে পারে।</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ফাংশনালিটি</strong></td>
+<td style="text-align: left;">শুধুমাত্র ফিল্ডস ও বিজনেস লজিক।</td>
+<td style="text-align: left;"><code>fromJson()</code>, <code>toJson()</code>, <code>toEntity()</code> মেথড থাকে।</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>পরিবর্তনশীলতা</strong></td>
+<td style="text-align: left;">ব্যাকএন্ডের API রেসপন্স পরিবর্তন হলেও Entity অপরিবর্তিত থাকে।</td>
+<td style="text-align: left;">API-এর রেসপন্স কী বদলালে শুধু Model বদলায়।</td>
+</tr>
+</tbody>
+</table>
+<p><strong>উদাহরণ:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1">// Domain Layer: Entity</span>
+<span class="kd">class</span><span class="w"> </span><span class="nc">UserEntity</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">fullName</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">email</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">UserEntity</span><span class="p">({</span><span class="kd">required</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="kd">required</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="n">fullName</span><span class="p">,</span><span class="w"> </span><span class="kd">required</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="n">email</span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="c1">// Data Layer: Model</span>
+<span class="kd">class</span><span class="w"> </span><span class="nc">UserModel</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">UserEntity</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">UserModel</span><span class="p">({</span><span class="kd">required</span><span class="w"> </span><span class="k">super</span><span class="p">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="kd">required</span><span class="w"> </span><span class="k">super</span><span class="p">.</span><span class="n">fullName</span><span class="p">,</span><span class="w"> </span><span class="kd">required</span><span class="w"> </span><span class="k">super</span><span class="p">.</span><span class="n">email</span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">factory</span><span class="w"> </span><span class="n">UserModel</span><span class="p">.</span><span class="n">fromJson</span><span class="p">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">dynamic</span><span class="o">&gt;</span><span class="w"> </span><span class="n">json</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">UserModel</span><span class="p">(</span>
+<span class="w">      </span><span class="nl">id:</span><span class="w"> </span><span class="n">json</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span>
+<span class="w">      </span><span class="nl">fullName:</span><span class="w"> </span><span class="n">json</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span>
+<span class="w">      </span><span class="nl">email:</span><span class="w"> </span><span class="n">json</span><span class="p">[</span><span class="s1">'email_address'</span><span class="p">]</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">Map</span><span class="o">&lt;</span><span class="kt">String</span><span class="p">,</span><span class="w"> </span><span class="kt">dynamic</span><span class="o">&gt;</span><span class="w"> </span><span class="n">toJson</span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s1">'_id'</span><span class="o">:</span><span class="w"> </span><span class="n">id</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">'name'</span><span class="o">:</span><span class="w"> </span><span class="n">fullName</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">'email_address'</span><span class="o">:</span><span class="w"> </span><span class="n">email</span><span class="p">,</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h2 id="design-patterns-dependency-injection">🧩 ২. Design Patterns &amp; Dependency Injection</h2>
+<h3 id="repository-pattern">প্রশ্ন ৩: Repository Pattern কী এবং এটি ব্যবহারের সুবিধা কী?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+Repository Pattern হলো ডেটা সোর্স (API, Database, Cache) এবং বিজনেস লজিকের মধ্যে একটি মধ্যস্থতাকারী (Mediator) লেয়ার।</p>
+<p><strong>সুবিধা:</strong><br>
+1. <strong>ডিকাপলিং:</strong> আপনার UI বা UseCase জানে না ডেটা কি সরাসরি সার্ভার থেকে এলো নাকি লোকাল SQLite থেকে।<br>
+2. <strong>টেস্টিং সুবিধা:</strong> রিপোজিটরি অ্যাবস্ট্রাক্ট হওয়ার কারণে সহজেই Unit Test-এ Fake বা Mock Repository ইনজেক্ট করা যায়।<br>
+3. <strong>ক্যাশিং ম্যানেজমেন্ট:</strong> অফলাইন সাপোর্ট দেওয়ার জন্য রিপোজিটরির ভেতরেই ডিসিশন নেওয়া যায়: নেটওয়ার্ক থাকলে API কল করে লোকাল ডিবি আপডেট করো, না থাকলে লোকাল ডেটা দাও।</p>
+<hr>
+<h3 id="dependency-injection-di-get_it">প্রশ্ন ৪: Dependency Injection (DI) কী এবং <code>get_it</code> কীভাবে কাজ করে?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+Dependency Injection হলো এমন একটি কৌশল যেখানে একটি অবজেক্ট তার প্রয়োজনীয় অন্যান্য ডিপেনডেন্সি নিজে তৈরি (instantiate) না করে বাইরে থেকে গ্রহণ করে (Inversion of Control)।</p>
+<p><code>get_it</code> হলো ডার্টের একটি অত্যন্ত জনপ্রিয় <strong>Service Locator</strong>।</p>
+<p><strong>কেন সরাসরি <code>new ApiClient()</code> করব না?</strong><br>
+যদি কোনো ক্লাসের ভেতরে হার্ডকোড করে ডিপেনডেন্সি তৈরি করা হয়, তবে ওই ক্লাসকে আলাদা করে ইউনিট টেস্ট করা অসম্ভব হয়ে যায়।</p>
+<p><strong><code>get_it</code> ব্যবহারের বাস্তব উদাহরণ:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'package:get_it/get_it.dart'</span><span class="p">;</span>
+
+<span class="kd">final</span><span class="w"> </span><span class="n">sl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetIt</span><span class="p">.</span><span class="n">instance</span><span class="p">;</span><span class="w"> </span><span class="c1">// sl = Service Locator</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">initLocator</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// ১. External / Network Clients (Singleton)</span>
+<span class="w">  </span><span class="n">sl</span><span class="p">.</span><span class="n">registerLazySingleton</span><span class="o">&lt;</span><span class="n">Dio</span><span class="o">&gt;</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Dio</span><span class="p">());</span>
+
+<span class="w">  </span><span class="c1">// ২. DataSources</span>
+<span class="w">  </span><span class="n">sl</span><span class="p">.</span><span class="n">registerLazySingleton</span><span class="o">&lt;</span><span class="n">AuthRemoteDataSource</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">AuthRemoteDataSourceImpl</span><span class="p">(</span><span class="nl">dio:</span><span class="w"> </span><span class="n">sl</span><span class="p">()),</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// ৩. Repositories</span>
+<span class="w">  </span><span class="n">sl</span><span class="p">.</span><span class="n">registerLazySingleton</span><span class="o">&lt;</span><span class="n">AuthRepository</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">AuthRepositoryImpl</span><span class="p">(</span><span class="nl">remoteDataSource:</span><span class="w"> </span><span class="n">sl</span><span class="p">()),</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// ৪. UseCases</span>
+<span class="w">  </span><span class="n">sl</span><span class="p">.</span><span class="n">registerLazySingleton</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">LoginUseCase</span><span class="p">(</span><span class="n">sl</span><span class="p">()));</span>
+
+<span class="w">  </span><span class="c1">// ৫. Blocs / Cubits (Factory - প্রতিবার নতুন ইন্সট্যান্স)</span>
+<span class="w">  </span><span class="n">sl</span><span class="p">.</span><span class="n">registerFactory</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">AuthBloc</span><span class="p">(</span><span class="nl">loginUseCase:</span><span class="w"> </span><span class="n">sl</span><span class="p">()));</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Interview Tips:</strong> <code>registerLazySingleton</code> কেবল তখনই ইন্সট্যান্স তৈরি করে যখন প্রথমবার এটিকে কল করা হয়। আর <code>registerFactory</code> প্রতিবার কল করার সময় একটি নতুন ফ্রেশ অবজেক্ট রিটার্ন করে (Bloc/Controller-এর জন্য উপযুক্ত)।</p>
+</blockquote>
+</div>
+
+<div class="file-section" id="chap-13-architecture-security-security-and-storage-md">
+<div class="section-header-tag"><span class="file-badge">12_architecture_and_security/security_and_storage.md</span></div>
+<h2 class="section-title">SSL Pinning, FlutterSecureStorage ও Root Detection</h2>
+<h1 id="app-security-reverse-engineering-protection-">App Security &amp; Reverse Engineering Protection - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর</h1>
+<p>Flutter মোবাইল অ্যাপ্লিকেশনে ডেটা সিকিউরিটি, নেটওয়ার্ক স্নিফিং প্রতিরোধ, টোকেন স্টোরেজ এবং রিভার্স ইঞ্জিনিয়ারিং প্রটেকশন।</p>
+<hr>
+<h2 id="ssl-pinning-certificate-pinning">🛡️ ১. SSL Pinning (Certificate Pinning)</h2>
+<h3 id="ssl-pinning-mitm">প্রশ্ন ১: SSL Pinning কী এবং ম্যান-ইন-দ্য-মিডল (MITM) অ্যাটাক কীভাবে রোধ করে?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+- <strong>স্বাভাবিক HTTPS কানেকশন:</strong> মোবাইল ফোন অপারেটিং সিস্টেমের (Android/iOS) ট্রাস্টেড CA (Certificate Authority)-র উপর নির্ভর করে এনক্রিপশন যাচাই করে। কোনো হ্যাকার যদি ইউজারের ফোনে নিজের একটি ফেইক রুট সার্টিফিকেট ইন্সটল করিয়ে প্রক্সি (যেমন: Charles Proxy, Burp Suite, Fiddler) চালু করে, তবে অ্যাপের সকল পাসওয়ার্ড ও API রিকোয়েস্ট/রেসপন্স পরিষ্কার টেক্সটে দেখতে পারে (MITM Attack)।<br>
+- <strong>SSL Pinning:</strong> অ্যাপের ভেতরেই সার্ভারের নির্দিষ্ট পাবলিক কি (Public Key Hash) অথবা সার্টিফিকেট হার্ডকোড করে দেওয়া হয়। ফলে হ্যান্ডশেক করার সময় সার্ভার সার্টিফিকেট হুবহু ম্যাচ না করলে অ্যাপ কোনো কানেকশন এলাও করে না—এমনকি ফোনে ফেইক রুট সার্টিফিকেট থাকলেও রিকোয়েস্ট ব্লক হয়ে যায়।</p>
+<p><strong>Dio দিয়ে SHA-256 Public Key Pinning-এর উদাহরণ:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'dart:io'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">'package:dio/dio.dart'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">'package:dio/io.dart'</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">setupSslPinning</span><span class="p">(</span><span class="n">Dio</span><span class="w"> </span><span class="n">dio</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// সার্ভার পাবলিক কি হ্যাশ (SPKI Fingerprint)</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">expectedFingerprint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"9a73d9e840...b4f17c"</span><span class="p">;</span>
+
+<span class="w">  </span><span class="p">(</span><span class="n">dio</span><span class="p">.</span><span class="n">httpClientAdapter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">DefaultHttpClientAdapter</span><span class="p">).</span><span class="n">onHttpClientCreate</span><span class="w"> </span><span class="o">=</span>
+<span class="w">      </span><span class="p">(</span><span class="n">HttpClient</span><span class="w"> </span><span class="n">client</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">SecurityContext</span><span class="w"> </span><span class="n">sc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SecurityContext</span><span class="p">(</span><span class="nl">withTrustedRoots:</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// আপনি চাইলে কাস্টম .pem সার্টিফিকেট লোড করতে পারেন</span>
+<span class="w">    </span><span class="c1">// sc.setTrustedCertificatesBytes(certBytes);</span>
+
+<span class="w">    </span><span class="n">HttpClient</span><span class="w"> </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HttpClient</span><span class="p">(</span><span class="nl">context:</span><span class="w"> </span><span class="n">sc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">httpClient</span><span class="p">.</span><span class="n">badCertificateCallback</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="p">(</span><span class="n">X509Certificate</span><span class="w"> </span><span class="n">cert</span><span class="p">,</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">port</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// যদি সার্টিফিকেট ফিঙ্গারপ্রিন্ট মিলে যায় তবেই true, অন্যথায় false</span>
+<span class="w">      </span><span class="kd">final</span><span class="w"> </span><span class="n">sha256</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cert</span><span class="p">.</span><span class="n">sha256</span><span class="p">;</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">sha256</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">expectedFingerprint</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">httpClient</span><span class="p">;</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h2 id="secure-storage-sharedpreferences">🔐 ২. Secure Storage বনাম SharedPreferences</h2>
+<h3 id="sharedpreferences-flutter_secure_storage">প্রশ্ন ২: SharedPreferences-এ সেনসিটিভ ডেটা রাখা কেন অনিরাপদ? <code>flutter_secure_storage</code> কীভাবে কাজ করে?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ol>
+<li>
+<p><strong><code>shared_preferences</code> কেন অনিরাপদ:</strong><br>
+   - অ্যান্ড্রয়েডে এটি প্লেইন XML ফাইল হিসেবে (<code>/data/data/com.example.app/shared_prefs/</code>) আন-এনক্রিপ্টেড অবস্থায় স্টোর হয়।<br>
+   - রুট করা ফোন বা ব্যাকআপ এক্সপ্লোরার দিয়ে যে কেউ এই ফাইল ওপেন করে ইউজার টোকেন ও পাসওয়ার্ড চুরি করতে পারে।</p>
+</li>
+<li>
+<p><strong><code>flutter_secure_storage</code> কীভাবে ডেটা সুরক্ষিত রাখে:</strong><br>
+   - <strong>Android:</strong> এটি <strong>Android Keystore</strong> সিস্টেম ব্যবহার করে ডেটা AES এনক্রিপ্ট করে এবং এনক্রিপশন কিগুলো হার্ডওয়্যার সিকিউরিটি মডিউলে (TEE/StrongBox) সুরক্ষিত থাকে।<br>
+   - <strong>iOS:</strong> এটি অ্যাপলের মিলিটারি-গ্রেড <strong>Keychain Services</strong> ব্যবহার করে, যা ডিভাইস লক থাকা অবস্থায় সম্পূর্ণ সুরক্ষিত থাকে।</p>
+</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'package:flutter_secure_storage/flutter_secure_storage.dart'</span><span class="p">;</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">SecureStorageService</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">_storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FlutterSecureStorage</span><span class="p">(</span>
+<span class="w">    </span><span class="nl">aOptions:</span><span class="w"> </span><span class="n">AndroidOptions</span><span class="p">(</span><span class="nl">encryptedSharedPreferences:</span><span class="w"> </span><span class="kc">true</span><span class="p">),</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="kd">static</span><span class="w"> </span><span class="n">Future</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="w"> </span><span class="n">saveToken</span><span class="p">(</span><span class="kt">String</span><span class="w"> </span><span class="n">token</span><span class="p">)</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">await</span><span class="w"> </span><span class="n">_storage</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="nl">key:</span><span class="w"> </span><span class="s1">'auth_token'</span><span class="p">,</span><span class="w"> </span><span class="nl">value:</span><span class="w"> </span><span class="n">token</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kd">static</span><span class="w"> </span><span class="n">Future</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">?&gt;</span><span class="w"> </span><span class="n">getToken</span><span class="p">()</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kd">await</span><span class="w"> </span><span class="n">_storage</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="nl">key:</span><span class="w"> </span><span class="s1">'auth_token'</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h2 id="root-jailbreak-detection-api-keys">🚫 ৩. Root / Jailbreak Detection &amp; API Keys</h2>
+<h3 id="jailbroken-rooted">প্রশ্ন ৩: Jailbroken / Rooted ডিভাইসে ব্যাংকিং বা ফিনটেক অ্যাপ কেন রান করা ঝুঁকিপূর্ণ? কীভাবে এটি ডিটেক্ট করবেন?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+- রুটেড বা জেলব্রোকেন ডিভাইসে ওএস-এর স্যান্ডবক্সিং সিকিউরিটি ভেঙে যায়। ফ্রাইডা (Frida) বা এক্সপোজড (Xposed) ফ্রেমওয়ার্ক দিয়ে অ্যাপ মেমোরি ম্যানিপুলেট করা, বায়োমেট্রিক বাইপাস করা বা রানটাইমে কোড ইনজেকশন দেওয়া যায়।<br>
+- ব্যাংকিং ও ওয়ালেট অ্যাপে <code>flutter_jailbreak_flag</code> বা <code>freerasp</code> প্যাকেজ ব্যবহার করে ডিভাইস রুট চেক করা হয় এবং রুট পাওয়া গেলে ব্যবহারকারীকে সতর্ক করে অ্যাপ ক্লোজ করে দেওয়া হয়।</p>
+<h3 id="google-maps-api-secret-key">প্রশ্ন ৪: Google Maps বা থার্ড-পার্টি API Secret Key কীভাবে সোর্স কোডে সুরক্ষিত রাখবেন?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+1. <strong>ভুল পদ্ধতি:</strong> সরাসরি Dart ফাইলের ভেতরে <code>static const apiKey = "AIzaSy..."</code> লেখা। কারণ APK ডিকম্পাইল করলেই স্ট্রিং হিসেবে কীটি পেয়ে যায়।<br>
+2. <strong>সঠিক পদ্ধতি:</strong><br>
+   - <strong><code>--dart-define</code> ব্যবহার করা:</strong><br>
+<code>bash
+     flutter run --dart-define=API_KEY=my_secret_key_123</code><br>
+     কোডে কল করা:<br>
+<code>dart
+     const apiKey = String.fromEnvironment('API_KEY');</code><br>
+   - <strong>প্রক্সি ব্যাকএন্ড আর্কিটেকচার:</strong> সেনসিটিভ API যেমন OpenAI, Payment Secret Keys কখনো মোবাইল অ্যাপে রাখবেন না। মোবাইল ক্লায়েন্ট আপনার নিজস্ব সুরক্ষিত ব্যাকএন্ডে রিকোয়েস্ট পাঠাবে এবং ব্যাকএন্ড থার্ড-পার্টি API কল করবে।</p>
+</div>
+
+</div>
+
+<div class="chapter-block" id="chap-14-offline-notifications">
+<div class="chapter-header">
+<span class="chapter-badge">Offline & Notifications</span>
+<h1 class="chapter-title">অধ্যায় ১৪: Offline-First, Caching &amp; Push Notifications</h1>
+<p class="chapter-subtitle">Chapter 14: Offline-First &amp; Push Notifications</p>
+</div>
+<div class="file-section" id="chap-14-offline-notifications-offline-first-and-caching-md">
+<div class="section-header-tag"><span class="file-badge">13_offline_and_notifications/offline_first_and_caching.md</span></div>
+<h2 class="section-title">Offline-First Caching (Hive/SQLite) ও Optimistic UI</h2>
+<h1 id="offline-first-architecture-caching-">Offline-First Architecture &amp; Caching - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর</h1>
+<p>ইন্টারনেট কানেকশন দুর্বল বা সম্পূর্ণ অফলাইনে থাকলেও অ্যাপ নিরবচ্ছিন্নভাবে চালু রাখা এবং নেটওয়ার্ক আসলে ডেটা স্বয়ংক্রিয়ভাবে ব্যাকএন্ডের সাথে সিঙ্ক করার কৌশল।</p>
+<hr>
+<h2 id="offline-first">📶 ১. Offline-First স্ট্র্যাটেজি ও সিঙ্কিং প্যাটার্ন</h2>
+<h3 id="cache-then-network-network-first">প্রশ্ন ১: Cache-Then-Network বনাম Network-First স্ট্র্যাটেজির মধ্যে পার্থক্য কী?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ol>
+<li>
+<p><strong>Network-First (অনলাইন-ফার্স্ট):</strong><br>
+   - অ্যাপ প্রথমে সার্ভারে রিকোয়েস্ট পাঠাবে।<br>
+   - সার্ভার ফেইল করলে বা টাইমআউট হলে ক্যাশ ডেটা দেখাবে।<br>
+   - <em>অসুবিধা:</em> নেটওয়ার্ক ধীরগতির হলে ইউজারকে বেশ কয়েক সেকেন্ড ব্ল্যাংক লোডার দেখতে হয়।</p>
+</li>
+<li>
+<p><strong>Cache-Then-Network (Offline-First Best Practice):</strong><br>
+   - স্ক্রিন ওপেন হওয়ামাত্রই প্রথমে লোকাল ডেটাবেস (Hive/Isar/SQLite) থেকে ইনস্ট্যান্ট ক্যাশ করা ডেটা স্ক্রিনে রেন্ডার করে দেয় (জিরো লোডিং টাইম)।<br>
+   - একই সময়ে ব্যাকগ্রাউন্ডে সাইলেন্টলি সার্ভারে API কল করা হয়।<br>
+   - সার্ভার থেকে নতুন ডেটা আসামাত্রই লোকাল ক্যাশ আপডেট হয় এবং UI স্মুথলি রিফ্রেশ হয়ে যায়।</p>
+</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="k">[UI Screen Opens]</span>
+<span class="w">      </span><span class="na">├── 1. Read Local DB ────────► Render Immediately (0ms)</span>
+<span class="w">      </span><span class="na">└── 2. Call Remote API (Background)</span>
+<span class="w">               </span><span class="na">│</span>
+<span class="w">               </span><span class="na">▼</span>
+<span class="w">         </span><span class="na">[API Success] ────────► Update Local DB ────► UI Smooth Refresh</span>
+</code></pre></div>
+
+<hr>
+<h3 id="hive-isar-sqlite-sqflite-drift-">প্রশ্ন ২: Hive, Isar এবং SQLite (sqflite / drift)-এর মধ্যে পার্থক্য কী? কখন কোনটি বেছে নেবেন?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">বৈশিষ্ট্য</th>
+<th style="text-align: left;">Hive / Isar</th>
+<th style="text-align: left;">SQLite (<code>sqflite</code> / <code>drift</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>ডেটাবেস ধরন</strong></td>
+<td style="text-align: left;">NoSQL (Key-Value / Document based)</td>
+<td style="text-align: left;">Relational SQL (Tables, Rows, Columns)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>গতি (Speed)</strong></td>
+<td style="text-align: left;">সুপার ফাস্ট (মেমোরি ম্যাপিং ও বাইনারি ফরম্যাট)।</td>
+<td style="text-align: left;">মাঝারি থেকে দ্রুত (Disk I/O ও SQL parsing লাগে)।</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>জটিল কুয়েরি</strong></td>
+<td style="text-align: left;">রিলেশন ও জয়েন (Join) অপারেশন সীমিত।</td>
+<td style="text-align: left;">শক্তিশালী SQL কুয়েরি, Foreign Key, Complex Joins।</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>কখন ব্যবহার করবেন?</strong></td>
+<td style="text-align: left;">ইউজার প্রেফারেন্স, চ্যাট হিস্ট্রি, ক্যাশ ডেটা, দ্রুত রিড/রাইট প্রয়োজন এমন ডেটা।</td>
+<td style="text-align: left;">ই-কমার্স অ্যাপ, ইনভেন্টরি, অফলাইন সেলস বা রিলেশনাল ডেটাবেস প্রয়োজন হলে।</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="optimistic-ui-updates">প্রশ্ন ৩: Optimistic UI Updates কী এবং কেন এটি ব্যবহার করা হয়?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong><br>
+- <strong>ধারণা:</strong> ইউজার যখন কোনো সোশ্যাল মিডিয়া অ্যাপে "Like" বাটনে ট্যাপ করে বা কমেন্ট করে, তখন সার্ভার থেকে "Like Success" রেসপন্স আসার জন্য অপেক্ষা না করে সাথে সাথে UI-তে লাইক কাউন্ট বাড়িয়ে দেওয়া এবং হার্ট আইকন ফিল করে দেওয়া।<br>
+- <strong>কেন জরুরি:</strong> এটি ইউজারকে অ্যাপটি সুপার-রেসপন্সিভ এবং ফ্লুইড মনে করায়।<br>
+- <strong>রোলব্যাক হ্যান্ডলিং:</strong> ব্যাকগ্রাউন্ডের API কল যদি নেটওয়ার্ক এরর বা সার্ভার ক্র্যাশের কারণে ফেইল করে, তবে একটি স্ন্যাকবার (Snackbar) মেসেজ দিয়ে UI-এর স্টেট আগের অবস্থায় রোলব্যাক করতে হয়।</p>
+</div>
+
+<div class="file-section" id="chap-14-offline-notifications-push-notifications-and-deeplink-md">
+<div class="section-header-tag"><span class="file-badge">13_offline_and_notifications/push_notifications_and_deeplink.md</span></div>
+<h2 class="section-title">Firebase FCM (Foreground/Background/Killed) ও Deep Linking</h2>
+<h1 id="push-notifications-deep-linking-">Push Notifications &amp; Deep Linking - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর</h1>
+<p>Firebase Cloud Messaging (FCM) দিয়ে নোটিফিকেশন হ্যান্ডলিং এবং ইউনিভার্সাল/অ্যাপ লিংক দিয়ে নির্দিষ্ট স্ক্রিনে ইউজার রিডাইরেক্ট করার প্র্যাকটিক্যাল টেকনিক।</p>
+<hr>
+<h2 id="firebase-cloud-messaging-fcm">🔔 ১. Firebase Cloud Messaging (FCM)</h2>
+<h3 id="fcm-foreground-background-terminated">প্রশ্ন ১: FCM-এ Foreground, Background, এবং Terminated স্টেটে নোটিফিকেশন হ্যান্ডলিং কীভাবে আলাদা?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">┌─────────────────────────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="n">Foreground</span><span class="w"> </span><span class="p">(</span><span class="n">অ</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">প</span><span class="w"> </span><span class="n">ওপ</span><span class="err">ে</span><span class="n">ন</span><span class="w"> </span><span class="n">ও</span><span class="w"> </span><span class="n">ইউজ</span><span class="err">া</span><span class="n">র</span><span class="err">ে</span><span class="n">র</span><span class="w"> </span><span class="n">স</span><span class="err">া</span><span class="n">মন</span><span class="err">ে</span><span class="w"> </span><span class="n">একট</span><span class="err">ি</span><span class="n">ভ</span><span class="p">)</span><span class="w">            </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">onMessage</span><span class="p">.</span><span class="n">listen</span><span class="p">(...)</span><span class="w">              </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ড</span><span class="err">ি</span><span class="n">ফল</span><span class="err">্</span><span class="n">ট</span><span class="w"> </span><span class="n">স</span><span class="err">ি</span><span class="n">স</span><span class="err">্</span><span class="n">ট</span><span class="err">ে</span><span class="n">ম</span><span class="w"> </span><span class="n">পপআপ</span><span class="w"> </span><span class="n">দ</span><span class="err">ে</span><span class="n">খ</span><span class="err">া</span><span class="n">য়</span><span class="w"> </span><span class="n">ন</span><span class="err">া</span><span class="p">,</span><span class="w"> </span><span class="n">flutter_local_notifications</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">       </span><span class="n">দ</span><span class="err">ি</span><span class="n">য়</span><span class="err">ে</span><span class="w"> </span><span class="n">ম</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">ন</span><span class="err">ু</span><span class="n">য়</span><span class="err">া</span><span class="n">ল</span><span class="err">ি</span><span class="w"> </span><span class="n">হ</span><span class="err">ে</span><span class="n">ডস</span><span class="o">-</span><span class="n">আপ</span><span class="w"> </span><span class="n">ব</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">ন</span><span class="err">া</span><span class="n">র</span><span class="w"> </span><span class="n">ত</span><span class="err">ৈ</span><span class="n">র</span><span class="err">ি</span><span class="w"> </span><span class="n">করত</span><span class="err">ে</span><span class="w"> </span><span class="n">হয়</span><span class="err">।</span><span class="w">          </span><span class="err">│</span>
+<span class="err">├─────────────────────────────────────────────────────────────┤</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">2.</span><span class="w"> </span><span class="n">Background</span><span class="w"> </span><span class="p">(</span><span class="n">অ</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">প</span><span class="w"> </span><span class="n">ম</span><span class="err">ি</span><span class="n">ন</span><span class="err">ি</span><span class="n">ম</span><span class="err">া</span><span class="n">ইজড</span><span class="w"> </span><span class="n">হয়</span><span class="err">ে</span><span class="w"> </span><span class="n">র</span><span class="err">ি</span><span class="n">স</span><span class="err">ে</span><span class="n">ন</span><span class="err">্</span><span class="n">ট</span><span class="w"> </span><span class="n">অ</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">পস</span><span class="err">ে</span><span class="w"> </span><span class="n">আছ</span><span class="err">ে</span><span class="p">)</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">onBackgroundMessage</span><span class="p">(...)</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">টপ</span><span class="o">-</span><span class="n">ল</span><span class="err">ে</span><span class="n">ভ</span><span class="err">ে</span><span class="n">ল</span><span class="w"> </span><span class="n">ব</span><span class="err">া</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">ফ</span><span class="err">াং</span><span class="n">শন</span><span class="w"> </span><span class="n">হত</span><span class="err">ে</span><span class="w"> </span><span class="n">হব</span><span class="err">ে</span><span class="w"> </span><span class="p">(</span><span class="nv">@pragma</span><span class="w"> </span><span class="n">vm</span><span class="o">-</span><span class="n">entry</span><span class="p">)</span><span class="w">   </span><span class="err">│</span>
+<span class="err">├─────────────────────────────────────────────────────────────┤</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">3.</span><span class="w"> </span><span class="n">Terminated</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Killed</span><span class="w"> </span><span class="p">(</span><span class="n">ইউজ</span><span class="err">া</span><span class="n">র</span><span class="w"> </span><span class="n">স</span><span class="err">ো</span><span class="n">য়</span><span class="err">া</span><span class="n">ইপ</span><span class="w"> </span><span class="n">কর</span><span class="err">ে</span><span class="w"> </span><span class="n">অ</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">প</span><span class="w"> </span><span class="n">বন</span><span class="err">্</span><span class="n">ধ</span><span class="w"> </span><span class="n">কর</span><span class="err">ে</span><span class="n">ছ</span><span class="err">ে</span><span class="p">)</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">instance</span><span class="p">.</span><span class="n">getInitialMessage</span><span class="p">()</span><span class="w">       </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ন</span><span class="err">ো</span><span class="n">ট</span><span class="err">ি</span><span class="n">ফ</span><span class="err">ি</span><span class="n">ক</span><span class="err">ে</span><span class="n">শন</span><span class="err">ে</span><span class="w"> </span><span class="n">ট</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">প</span><span class="w"> </span><span class="n">কর</span><span class="err">ে</span><span class="w"> </span><span class="n">অ</span><span class="err">্</span><span class="n">য</span><span class="err">া</span><span class="n">প</span><span class="w"> </span><span class="n">খ</span><span class="err">ু</span><span class="n">লল</span><span class="err">ে</span><span class="w"> </span><span class="n">এই</span><span class="w"> </span><span class="n">ম</span><span class="err">ে</span><span class="n">থড</span><span class="err">ে</span><span class="w"> </span><span class="n">ড</span><span class="err">ে</span><span class="n">ট</span><span class="err">া</span><span class="w"> </span><span class="n">প</span><span class="err">া</span><span class="n">ওয়</span><span class="err">া</span><span class="w"> </span><span class="n">য</span><span class="err">া</span><span class="n">য়</span><span class="err">│</span>
+<span class="err">└─────────────────────────────────────────────────────────────┘</span>
+</code></pre></div>
+
+<p><strong>বাস্তব কোড উদাহরণ:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'package:firebase_core/firebase_core.dart'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">'package:firebase_messaging/firebase_messaging.dart'</span><span class="p">;</span>
+
+<span class="c1">// Background handler অবশ্যই টপ-লেভেল ফাংশন হতে হবে</span>
+<span class="nd">@pragma</span><span class="p">(</span><span class="s1">'vm:entry-point'</span><span class="p">)</span>
+<span class="n">Future</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_firebaseMessagingBackgroundHandler</span><span class="p">(</span><span class="n">RemoteMessage</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">await</span><span class="w"> </span><span class="n">Firebase</span><span class="p">.</span><span class="n">initializeApp</span><span class="p">();</span>
+<span class="w">  </span><span class="n">print</span><span class="p">(</span><span class="s2">"Background Message ID: </span><span class="si">${</span><span class="n">message</span><span class="p">.</span><span class="n">messageId</span><span class="si">}</span><span class="s2">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">setupPushNotifications</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">onBackgroundMessage</span><span class="p">(</span><span class="n">_firebaseMessagingBackgroundHandler</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// ১. Foreground নোটিফিকেশন</span>
+<span class="w">  </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">onMessage</span><span class="p">.</span><span class="n">listen</span><span class="p">((</span><span class="n">RemoteMessage</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">print</span><span class="p">(</span><span class="s2">"Foreground Message: </span><span class="si">${</span><span class="n">message</span><span class="p">.</span><span class="n">notification</span><span class="o">?</span><span class="p">.</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// এখানে flutter_local_notifications দিয়ে ব্যানার দেখান</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// ২. Background অবস্থায় নোটিফিকেশন ট্যাপ করলে</span>
+<span class="w">  </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">onMessageOpenedApp</span><span class="p">.</span><span class="n">listen</span><span class="p">((</span><span class="n">RemoteMessage</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_navigateToDetailScreen</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="s1">'product_id'</span><span class="p">]);</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// ৩. Terminated অবস্থায় নোটিফিকেশন ট্যাপ করে অ্যাপ ওপেন করলে</span>
+<span class="w">  </span><span class="n">FirebaseMessaging</span><span class="p">.</span><span class="n">instance</span><span class="p">.</span><span class="n">getInitialMessage</span><span class="p">().</span><span class="n">then</span><span class="p">((</span><span class="n">RemoteMessage</span><span class="o">?</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">_navigateToDetailScreen</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="s1">'product_id'</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">_navigateToDetailScreen</span><span class="p">(</span><span class="kt">String</span><span class="o">?</span><span class="w"> </span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Navigation লজিক (GoRouter বা Navigator)</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h3 id="notification-payload-data-only-payload-">প্রশ্ন ২: Notification Payload বনাম Data-only Payload-এর মধ্যে পার্থক্য কী? সাইলেন্ট নোটিফিকেশন কী?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ul>
+<li><strong>Notification Payload (<code>"notification": {"title": "Hi", "body": "Hello"}</code>):</strong></li>
+<li>ব্যাকগ্রাউন্ডে থাকলে ওএস সরাসরি সিস্টেম ট্রে-তে ব্যানার দেখিয়ে দেয়। আপনার ডার্ট কোড রান করার সুযোগ পায় না যতক্ষণ না ইউজার নোটিফিকেশনে ট্যাপ করে।</li>
+<li><strong>Data-only Payload (<code>"data": {"key": "value"}</code>):</strong></li>
+<li>এতে কোনো ভিজ্যুয়াল নোটিফিকেশন সরাসরি তৈরি হয় না। ওএস অ্যাপের ব্যাকগ্রাউন্ড হ্যান্ডলারকে জাগিয়ে দেয় (Wake up)।</li>
+<li><strong>Silent Notification:</strong> অ্যাপ ব্যাকগ্রাউন্ডে গোপনে ডেটা ফেচ বা সিঙ্ক করতে পারে, এবং ডার্ট কোড নিজে সিদ্ধান্ত নিতে পারে নোটিফিকেশন দেখাবে কিনা।</li>
+</ul>
+<hr>
+<h2 id="deep-linking-app-links-universal-links">🔗 ২. Deep Linking (App Links &amp; Universal Links)</h2>
+<h3 id="custom-scheme-app-links-universal-links-">প্রশ্ন ৩: Custom Scheme বনাম App Links / Universal Links-এর পার্থক্য কী?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ol>
+<li><strong>Custom Scheme (<code>myapp://product/123</code>):</strong><br>
+   - ব্রাউজার কোনো ডোমেইন ভেরিফিকেশন করে না। যদি দুটি অ্যাপ একই স্কিম রেজিস্টার করে, তবে ইউজারের ফোনে কনফ্লিক্ট ডায়ালগ আসে (Disambiguation dialog)।</li>
+<li><strong>App Links (Android) &amp; Universal Links (iOS) (<code>https://mywebsite.com/product/123</code>):</strong><br>
+   - এটি স্ট্যান্ডার্ড HTTPS URL।<br>
+   - <strong>ডোমেইন ভেরিফিকেশন:</strong> আপনার সার্ভারে <code>.well-known/assetlinks.json</code> (Android) এবং <code>apple-app-site-association</code> (iOS) ফাইল রাখতে হয় যা প্রমাণ করে আপনিই ডোমেইনের মালিক।<br>
+   - ফোনে অ্যাপ ইন্সটল থাকলে সরাসরি কোনো ব্রাউজার ছাড়াই এক ক্লিকে অ্যাপের নির্দিষ্ট স্ক্রিন ওপেন হয়ে যাবে। অ্যাপ ইন্সটল না থাকলে স্বাভাবিক ব্রাউজার ওয়েবসাইটে চলে যাবে।</li>
+</ol>
+</div>
+
+</div>
+
+<div class="chapter-block" id="chap-15-live-coding">
+<div class="chapter-header">
+<span class="chapter-badge">Live Coding & Scenarios</span>
+<h1 class="chapter-title">অধ্যায় ১৫: Senior Live Coding &amp; Practical Challenges</h1>
+<p class="chapter-subtitle">Chapter 15: Live Coding Challenges</p>
+</div>
+<div class="file-section" id="chap-15-live-coding-coding-challenges-md">
+<div class="section-header-tag"><span class="file-badge">14_scenario_and_challenges/coding_challenges.md</span></div>
+<h2 class="section-title">Debounce Search, Infinite Scroll Pagination ও Image Cache</h2>
+<h1 id="senior-live-coding-scenario-based-challenges-">Senior Live Coding &amp; Scenario-Based Challenges - সম্পূর্ণ গাইড ও ইন্টারভিউ প্রশ্নোত্তর</h1>
+<p>টেকনিক্যাল ইন্টারভিউয়ের লাইভ কোডিং রাউন্ডে এবং মেশিন টেস্টে প্রায়ই যেসব প্র্যাকটিক্যাল কোডিং প্রবলেম সমাধান করতে দেওয়া হয়।</p>
+<hr>
+<h2 id="debounce-throttle">🔍 ১. সার্চ বারে Debounce &amp; Throttle প্যাটার্ন</h2>
+<h3 id="debounce-api">প্রশ্ন ১: Debounce কী? সার্চ বারে প্রতি ক্যারেক্টার টাইপ করার সাথে সাথে API কল রোধ করার জন্য এটি কীভাবে লিখবেন?</h3>
+<p><strong>উত্তর ও লাইভ কোডিং সলিউশন:</strong></p>
+<ul>
+<li><strong>Debounce:</strong> ইউজার যখন দ্রুত টাইপ করতে থাকে, তখন কোনো রিকোয়েস্ট পাঠানো হবে না। ইউজার টাইপিং থামিয়ে একটি নির্দিষ্ট সময় (যেমন ৫০০ মিলিসেকেন্ড) অপেক্ষা করলেই কেবলমাত্র ফাইনাল কি-ওয়ার্ড দিয়ে API কল হবে।</li>
+</ul>
+<p><strong>Timer দিয়ে কাস্টম Debouncer ক্লাস:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'dart:async'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="s1">'package:flutter/material.dart'</span><span class="p">;</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">Debouncer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">milliseconds</span><span class="p">;</span>
+<span class="w">  </span><span class="n">Timer</span><span class="o">?</span><span class="w"> </span><span class="n">_timer</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">Debouncer</span><span class="p">({</span><span class="k">this</span><span class="p">.</span><span class="n">milliseconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">500</span><span class="p">});</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="n">VoidCallback</span><span class="w"> </span><span class="n">action</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_timer</span><span class="o">?</span><span class="p">.</span><span class="n">cancel</span><span class="p">();</span><span class="w"> </span><span class="c1">// আগের চলমান টাইমার বাতিল করুন</span>
+<span class="w">    </span><span class="n">_timer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Timer</span><span class="p">(</span><span class="n">Duration</span><span class="p">(</span><span class="nl">milliseconds:</span><span class="w"> </span><span class="n">milliseconds</span><span class="p">),</span><span class="w"> </span><span class="n">action</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">dispose</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_timer</span><span class="o">?</span><span class="p">.</span><span class="n">cancel</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// UI-তে ব্যবহার:</span>
+<span class="kd">class</span><span class="w"> </span><span class="nc">ProductSearchScreen</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">StatefulWidget</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">ProductSearchScreen</span><span class="p">({</span><span class="k">super</span><span class="p">.</span><span class="n">key</span><span class="p">});</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="n">State</span><span class="o">&lt;</span><span class="n">ProductSearchScreen</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createState</span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">_ProductSearchScreenState</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">_ProductSearchScreenState</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="n">ProductSearchScreen</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">_debouncer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Debouncer</span><span class="p">(</span><span class="nl">milliseconds:</span><span class="w"> </span><span class="m">500</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">_onSearchChanged</span><span class="p">(</span><span class="kt">String</span><span class="w"> </span><span class="n">query</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">query</span><span class="p">.</span><span class="n">trim</span><span class="p">().</span><span class="n">isEmpty</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">_debouncer</span><span class="p">.</span><span class="n">run</span><span class="p">(()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">print</span><span class="p">(</span><span class="s2">"🔍 API Call Triggered for: </span><span class="si">$</span><span class="n">query</span><span class="s2">"</span><span class="p">);</span>
+<span class="w">      </span><span class="c1">// apiService.searchProducts(query);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">dispose</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_debouncer</span><span class="p">.</span><span class="n">dispose</span><span class="p">();</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="n">dispose</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="n">Widget</span><span class="w"> </span><span class="n">build</span><span class="p">(</span><span class="n">BuildContext</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Scaffold</span><span class="p">(</span>
+<span class="w">      </span><span class="nl">appBar:</span><span class="w"> </span><span class="n">AppBar</span><span class="p">(</span><span class="nl">title:</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s1">'Search Products'</span><span class="p">)),</span>
+<span class="w">      </span><span class="nl">body:</span><span class="w"> </span><span class="n">Padding</span><span class="p">(</span>
+<span class="w">        </span><span class="nl">padding:</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">EdgeInsets</span><span class="p">.</span><span class="n">all</span><span class="p">(</span><span class="m">16.0</span><span class="p">),</span>
+<span class="w">        </span><span class="nl">child:</span><span class="w"> </span><span class="n">TextField</span><span class="p">(</span>
+<span class="w">          </span><span class="nl">decoration:</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">InputDecoration</span><span class="p">(</span>
+<span class="w">            </span><span class="nl">hintText:</span><span class="w"> </span><span class="s1">'Search...'</span><span class="p">,</span>
+<span class="w">            </span><span class="nl">prefixIcon:</span><span class="w"> </span><span class="n">Icon</span><span class="p">(</span><span class="n">Icons</span><span class="p">.</span><span class="n">search</span><span class="p">),</span>
+<span class="w">          </span><span class="p">),</span>
+<span class="w">          </span><span class="nl">onChanged:</span><span class="w"> </span><span class="n">_onSearchChanged</span><span class="p">,</span>
+<span class="w">        </span><span class="p">),</span>
+<span class="w">      </span><span class="p">),</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h2 id="infinite-scroll-pagination">📜 ২. Infinite Scroll Pagination (লোড মোর)</h2>
+<h3 id="scrollcontroller">প্রশ্ন ২: <code>ScrollController</code> দিয়ে অফিশিয়াল উপায়ে এন্ডলেস স্ক্রলিং বা ইনফিনিট পেজিনেশন কীভাবে কোড করবেন?</h3>
+<p><strong>উত্তর ও লাইভ কোডিং সলিউশন:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="s1">'package:flutter/material.dart'</span><span class="p">;</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">PaginatedUserList</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">StatefulWidget</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">PaginatedUserList</span><span class="p">({</span><span class="k">super</span><span class="p">.</span><span class="n">key</span><span class="p">});</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="n">State</span><span class="o">&lt;</span><span class="n">PaginatedUserList</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createState</span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">_PaginatedUserListState</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">_PaginatedUserListState</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="n">PaginatedUserList</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">ScrollController</span><span class="w"> </span><span class="n">_scrollController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ScrollController</span><span class="p">();</span>
+<span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">_page</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">_isLoading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">_hasMore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">initState</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="n">initState</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_fetchNextPage</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_scrollController</span><span class="p">.</span><span class="n">addListener</span><span class="p">(</span><span class="n">_onScroll</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">_onScroll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ইউজার স্ক্রলের ৮০% পার হলেই পরবর্তী পেজ লোড ট্রিগার করুন</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_scrollController</span><span class="p">.</span><span class="n">position</span><span class="p">.</span><span class="n">pixels</span><span class="w"> </span><span class="o">&gt;=</span>
+<span class="w">        </span><span class="n">_scrollController</span><span class="p">.</span><span class="n">position</span><span class="p">.</span><span class="n">maxScrollExtent</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="m">0.8</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_isLoading</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_hasMore</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_fetchNextPage</span><span class="p">();</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">Future</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_fetchNextPage</span><span class="p">()</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">setState</span><span class="p">(()</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">_isLoading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// ফেক নেটওয়ার্ক লেটেন্সি</span>
+<span class="w">    </span><span class="kd">await</span><span class="w"> </span><span class="n">Future</span><span class="p">.</span><span class="n">delayed</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Duration</span><span class="p">(</span><span class="nl">seconds:</span><span class="w"> </span><span class="m">2</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_page</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">setState</span><span class="p">(()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_hasMore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_isLoading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">      </span><span class="p">});</span>
+<span class="w">      </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">newItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span><span class="p">.</span><span class="n">generate</span><span class="p">(</span><span class="m">15</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s2">"Item #Page </span><span class="si">$</span><span class="n">_page</span><span class="s2"> - Index </span><span class="si">$</span><span class="n">index</span><span class="s2">"</span><span class="p">);</span>
+<span class="w">    </span><span class="n">setState</span><span class="p">(()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">_page</span><span class="o">++</span><span class="p">;</span>
+<span class="w">      </span><span class="n">_items</span><span class="p">.</span><span class="n">addAll</span><span class="p">(</span><span class="n">newItems</span><span class="p">);</span>
+<span class="w">      </span><span class="n">_isLoading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">dispose</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_scrollController</span><span class="p">.</span><span class="n">dispose</span><span class="p">();</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="n">dispose</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@override</span>
+<span class="w">  </span><span class="n">Widget</span><span class="w"> </span><span class="n">build</span><span class="p">(</span><span class="n">BuildContext</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Scaffold</span><span class="p">(</span>
+<span class="w">      </span><span class="nl">appBar:</span><span class="w"> </span><span class="n">AppBar</span><span class="p">(</span><span class="nl">title:</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s1">'Infinite Scroll'</span><span class="p">)),</span>
+<span class="w">      </span><span class="nl">body:</span><span class="w"> </span><span class="n">ListView</span><span class="p">.</span><span class="n">builder</span><span class="p">(</span>
+<span class="w">        </span><span class="nl">controller:</span><span class="w"> </span><span class="n">_scrollController</span><span class="p">,</span>
+<span class="w">        </span><span class="nl">itemCount:</span><span class="w"> </span><span class="n">_items</span><span class="p">.</span><span class="n">length</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">_hasMore</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="m">0</span><span class="p">),</span>
+<span class="w">        </span><span class="nl">itemBuilder:</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">_items</span><span class="p">.</span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Padding</span><span class="p">(</span>
+<span class="w">              </span><span class="nl">padding:</span><span class="w"> </span><span class="n">EdgeInsets</span><span class="p">.</span><span class="n">all</span><span class="p">(</span><span class="m">16.0</span><span class="p">),</span>
+<span class="w">              </span><span class="nl">child:</span><span class="w"> </span><span class="n">Center</span><span class="p">(</span><span class="nl">child:</span><span class="w"> </span><span class="n">CircularProgressIndicator</span><span class="p">()),</span>
+<span class="w">            </span><span class="p">);</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">          </span><span class="k">return</span><span class="w"> </span><span class="n">ListTile</span><span class="p">(</span><span class="nl">title:</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="n">_items</span><span class="p">[</span><span class="n">index</span><span class="p">]));</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">      </span><span class="p">),</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr>
+<h2 id="-">🖼️ ৩. মেমোরি-দক্ষ ইমেজ লোডিং ও স্ক্রলিং অপ্টিমাইজেশন</h2>
+<h3 id="listviewbuilder-oom-out-of-memory">প্রশ্ন ৩: <code>ListView.builder</code>-এ অনেক বেশি বড় রেজোলিউশনের ইমেজ স্ক্রল করার সময় OOM (Out of Memory) বা ল্যাগিং রোধ করতে কী করবেন?</h3>
+<p><strong>উত্তর (ডিটেইল):</strong></p>
+<ol>
+<li><strong><code>memCacheWidth</code> ও <code>memCacheHeight</code> ব্যবহার করা:</strong><br>
+   - অরিজিনাল ইমেজ ৪০০০x৩০০০ হলেও মোবাইল স্ক্রিনের থাম্বনেইল হয়তো মাত্র ৩০০x৩০০। <br>
+   - মেমোরিতে পুরো ইমেজ ডিকোড না করে সাইজ স্পেসিফাই করুন:<br>
+<code>dart
+   Image.network(
+     'https://example.com/image.jpg',
+     cacheWidth: 300,
+     cacheHeight: 300,
+   );</code></li>
+<li><strong><code>cached_network_image</code> প্যাকেজ:</strong> ডিস্ক ক্যাশিং এবং অটোমেটিক মেমোরি ইভিকশন (LRU Cache) হ্যান্ডেল করে।</li>
+<li><strong><code>ListView</code> অপ্টিমাইজেশন ফ্ল্যাগ:</strong><br>
+   - <code>addAutomaticKeepAlives: false</code> (স্ক্রিন থেকে সরে গেলে উইজেট মেমোরি ক্লিয়ার করে দেওয়া)।<br>
+   - <code>addRepaintBoundaries: true</code> (প্রতিটি আইটেমের ড্রয়িং যাতে পাশের আইটেমের উপর প্রভাব না ফেলে)।</li>
+</ol>
 </div>
 
 </div>

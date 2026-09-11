@@ -124,3 +124,17 @@
 
 - [Flutter Testing Overview - পিরামিড, উইজেট টেস্ট ও pump](11_testing_in_flutter/testing_overview.md)
 - [Mocktail দিয়ে API মক করা, Bloc Testing ও Golden Tests](11_testing_in_flutter/mocking_and_bloc_test.md)
+
+# অধ্যায় ১৩: Clean Architecture, DI ও App Security
+
+- [Clean Architecture লেয়ারসমূহ ও GetIt Dependency Injection](12_architecture_and_security/clean_architecture_and_di.md)
+- [SSL Pinning, FlutterSecureStorage ও Root Detection](12_architecture_and_security/security_and_storage.md)
+
+# অধ্যায় ১৪: Offline-First, Caching & Push Notifications
+
+- [Offline-First Caching (Hive/SQLite) ও Optimistic UI](13_offline_and_notifications/offline_first_and_caching.md)
+- [Firebase FCM (Foreground/Background/Killed) ও Deep Linking](13_offline_and_notifications/push_notifications_and_deeplink.md)
+
+# অধ্যায় ১৫: Senior Live Coding & Practical Challenges
+
+- [Debounce Search, Infinite Scroll Pagination ও Image Cache](14_scenario_and_challenges/coding_challenges.md)
