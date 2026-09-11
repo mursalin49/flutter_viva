@@ -1,0 +1,12 @@
+# mdBook local build directory & binary
+book/
+mdbook.exe
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# OS generated
+.DS_Store
+Thumbs.db
